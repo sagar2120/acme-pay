@@ -48,9 +48,11 @@ export function ImportDrawer({ open, onClose, onSaved }: Props) {
         here, so you can fix the file and upload it again.
       </p>
 
-      <Upload.Dragger accept=".csv,text/csv" maxCount={1} showUploadList={false} beforeUpload={send} disabled={busy}>
-        <p style={{ margin: 16 }}>{busy ? "Checking…" : "Drop a CSV file here, or click to choose one"}</p>
-      </Upload.Dragger>
+      <div className="drop-zone">
+        <Upload.Dragger accept=".csv,text/csv" maxCount={1} showUploadList={false} beforeUpload={send} disabled={busy}>
+          <p style={{ margin: 16 }}>{busy ? "Checking…" : "Drop a CSV file here, or click to choose one"}</p>
+        </Upload.Dragger>
+      </div>
 
       {problem && <Alert type="error" showIcon message={problem} style={{ marginTop: 16 }} />}
 

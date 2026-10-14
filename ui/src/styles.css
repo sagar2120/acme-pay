@@ -73,6 +73,9 @@ body {
   background: var(--ledger);
 }
 
+/* Ant's drop zone fills its parent's height; in a drawer that is the whole panel */
+.drop-zone .ant-upload.ant-upload-drag { height: auto; }
+
 .history { margin: 0; padding: 0; list-style: none; }
 
 .history li { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--rule); }
