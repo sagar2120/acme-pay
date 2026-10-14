@@ -130,3 +130,31 @@ def test_quartiles_mark_the_middle_half_of_pay(client, company):
     assert (groups["Austin"]["p25_usd"], groups["Austin"]["p75_usd"]) == ("20000.00", "60000.00")
     assert (groups["Denver"]["p25_usd"], groups["Denver"]["p75_usd"]) == ("10000.00", "30000.00")
     assert (groups["Boston"]["p25_usd"], groups["Boston"]["p75_usd"]) == ("70000.00", "70000.00")
+
+
+def test_the_same_question_is_answered_from_memory_until_pay_changes(
+    client, session, company, monkeypatch
+):
+    import app.summary as summary_module
+
+    counted = {"queries": 0}
+    real = summary_module._summarise
+
+    def counting(*args, **kwargs):
+        counted["queries"] += 1
+        return real(*args, **kwargs)
+
+    monkeypatch.setattr(summary_module, "_summarise", counting)
+
+    summary(client)
+    summary(client)
+    assert (
+        counted["queries"] == 2
+    )  # one request: groups + overall; the second request hit the cache
+
+    client.post(
+        "/api/employees/ACME-2020-00001/pay",
+        json={"amount": "50000", "effective_from": "2025-01-01"},
+    )
+    summary(client)
+    assert counted["queries"] == 4  # a pay change clears the cache
