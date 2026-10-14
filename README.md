@@ -1,90 +1,69 @@
 # ACME Pay
 
-Salary management for ACME's HR manager: keep pay for 10,000 people correct,
-and answer "what do we pay?" across six cities in one currency.
+Salary management for ACME's HR manager: keep pay for 10,000 people across six cities correct, and answer "what do we pay?" in seconds, in one currency.
 
-**Live:** https://acme-pay.onrender.com (free plan: the first load after a quiet
-period can take up to a minute) · **Demo video:** _link_
-
-The decision that shaped everything else: **pay is a dated record, not a
-column.** The spreadsheets this replaces lose history every time someone types
-over a salary. Here a pay change always adds a new record with an effective
-date; current pay is simply the newest one. It cost one table and one query.
+**Live:** https://acme-pay.onrender.com (free plan: the first visit after a quiet period can take up to a minute to wake up)
+**Demo video (5 min):** _link added after recording_
 
 ## What it does
 
-- **Pay answers** (home page). Group by location, department or level, filter,
-  and see headcount, annual payroll, and the lowest, median and highest pay per
-  group in USD, with the spread drawn as a line so you see more than one number.
-  Click a group to see those people.
-- **People.** 10,000 employees, 50 per page, search by name or email, filter,
-  sort by name or pay. Record a pay change from any row; the app refuses changes
-  that break a rule (zero pay, wrong currency, a date before the person was
-  hired, two changes on one day) and says why.
-- Pay is stored in each location's currency and converted to USD with a fixed
-  rate table, so every report gives the same answer tomorrow.
+- **Pay answers** (home page): headcount, annual payroll and the lowest / median / highest pay in USD, grouped by location, department or level, with filters. A thin line per group shows the spread of pay, not just one number. Click a group to see those people.
+- **People**: search by name or email, filter, sort by name or pay, 50 per page.
+- **Record a pay change**: a new dated record with a note; old records are never overwritten. Changes that break a rule (zero pay, a date before the hire date, two changes on one day) are refused with the reason.
+- **Pay in local currency** (₹, $, €, £, S$), converted to USD with a fixed rate table, so cities can be compared.
+- **Seed**: the same 10,000 realistic employees on every run.
+
+What I chose to leave out, and why, is in [docs/requirements.md](docs/requirements.md): login, CSV import, an LLM question box, pay bands, live exchange rates.
 
 ## Run it locally
 
 Needs Python 3.10+ with [uv](https://docs.astral.sh/uv/), and Node 20+.
 
 ```bash
+# backend (creates and seeds acme.db on first start)
 uv sync
-uv run uvicorn app.main:app --reload     # API on :8000; creates and seeds acme.db on first start
-cd ui && npm ci && npm run dev           # screens on http://localhost:5173
+uv run uvicorn app.main:app --reload          # http://localhost:8000/api/health
+
+# screens, in a second terminal
+cd ui && npm ci && npm run dev                # http://localhost:5173
 ```
 
-Or the same image that runs live: `docker build -t acme-pay . && docker run -p 8000:8000 acme-pay`
-then open http://localhost:8000.
+Or the whole thing as it runs online: `docker build -t acme-pay . && docker run -p 8000:8000 acme-pay`, then open http://localhost:8000.
 
 ## Tests
 
 ```bash
-uv run pytest          # 48 tests, under 1 second
-cd ui && npm test      # 10 tests
+uv run pytest            # 48 tests, under 1 second
+cd ui && npm test        # 10 tests
 ```
 
-Tests are named as rules (`test_pay_change_before_hire_date_is_rejected`) and
-were written before the code they cover; the commit history shows each
-`test: ... (red)` followed by its `feat:`. The median tests use small groups
-whose answers are worked out by hand at the top of `tests/test_summary.py`.
+Tests are named as the rules they check, for example `test_pay_change_before_hire_date_is_rejected` and `test_median_of_an_even_sized_group_is_the_mean_of_the_middle_two`. The median tests use small groups whose answers are worked out by hand at the top of `tests/test_summary.py`.
 
 ## How it is built
 
-FastAPI + SQLAlchemy + SQLite, React + TypeScript + Ant Design, deployed as one
-Docker service on Render that serves both the API and the screens. Business
-rules are pure functions in `app/rules.py`; aggregates (including the median)
-run in SQL, never as Python loops over employees.
+One FastAPI service serves both the API and the built React screens, backed by one SQLite file. Diagrams: [docs/architecture.md](docs/architecture.md).
 
-Read these first:
+The three decisions that shaped it (all ten are in [docs/decisions.md](docs/decisions.md)):
 
-- [`docs/requirements.md`](docs/requirements.md): scope, and what I left out on purpose
-- [`docs/decisions.md`](docs/decisions.md): the ten main decisions, with the alternatives
-- [`docs/performance.md`](docs/performance.md): measured timings on 10,000 people, and what changes at 100,000
-- [`docs/glossary.md`](docs/glossary.md): the words used everywhere, from tables to buttons
+1. **Pay is a dated record, not a salary column.** Overwriting pay is the spreadsheet problem this replaces. Current pay is the newest record, found with one window-function query.
+2. **USD is fixed when a pay record is saved**, from a static rate table. Reports give the same answer tomorrow as today, and totals over 10,000 people do not re-convert every row.
+3. **Answers are computed in SQL**, median included, so Python never loops over employees. Median, not average, because pay is lopsided.
 
-## How I used Claude
+Measured speed on 10,000 people: 37–86 ms per request, against a 300 ms target. Details, and what would change at 100,000 people: [docs/performance.md](docs/performance.md).
 
-I wrote the requirements, glossary and decisions before any code. Claude
-(Claude Code and a planning chat) typed the code, test first, one behaviour per
-commit. `CLAUDE.md` holds the standing rules I gave it. `docs/prompts/` records,
-for each step, the decision prompt, what Claude proposed, and what was caught
-or changed, including a rounding bug the tests missed, a test that wrote data
-in the wrong order, and a planned index that turned out to make no difference.
+## How I used Claude Code
+
+- I wrote the requirements, the glossary of words to use and the decisions before any code, and gave Claude Code standing rules in [CLAUDE.md](CLAUDE.md): it types, I decide; test first; only glossary words.
+- Every feature went test first, then code: the commit history shows a `test: … (red)` commit before each `feat:`.
+- The prompts for each step, what Claude proposed and what was changed are in [docs/prompts/](docs/prompts/). Examples of what review caught: pay was not actually rounded to the nearest 1,000 even though tests passed; test data saved pay before the employee existed; a planned index made no measurable difference, so the performance notes say so.
 
 ## Known limits
 
-- **Live data resets on redeploy.** Render's free plan has no persistent disk,
-  so the live site re-seeds on each deploy and pay changes made there are lost.
-  Fine for a demo; production would set `DATABASE_URL` to Postgres.
-- **No login.** One trusted HR manager, agreed with Incubyte. It is the first
-  thing to add before anyone else uses it.
-- **No import.** The seed stands in for migrating the spreadsheets; a real CSV
-  import (row-by-row validation, all-or-nothing save) is the next feature.
+- On Render's free plan the disk is reset on every deploy, so the live site re-seeds and pay changes made there do not survive a redeploy. Real use would point `DATABASE_URL` at a managed Postgres.
+- No login: one trusted user, as agreed for this exercise.
 
 ## What I would do next
 
-1. CSV import with a per-row error report.
-2. Login, then a department-head view limited to their own team.
-3. At ~100k employees: keep current pay in its own table, keyset paging on
-   People, and Postgres. See `docs/performance.md`.
+1. CSV import with per-row validation and an error report.
+2. Login and roles before anyone other than the HR manager uses it.
+3. At ~100,000 people: keep current pay in its own table, updated with each pay change, and keyset paging on the People list.
