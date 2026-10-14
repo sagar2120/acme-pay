@@ -3,7 +3,7 @@
 from decimal import ROUND_HALF_UP, Decimal
 from typing import Literal
 
-from sqlalchemy import func, literal, select
+from sqlalchemy import case, func, literal, select
 from sqlalchemy.orm import Session
 
 from app.employees import Filters, active_matching
@@ -41,48 +41,29 @@ def _summarise(session: Session, group_column, filters: Filters) -> list[dict]:
         filters,
     ).subquery()
 
-    totals = session.execute(
-        select(
-            people.c.name,
-            func.count().label("headcount"),
-            func.sum(people.c.usd).label("payroll_usd"),
-            func.min(people.c.usd).label("min_usd"),
-            func.max(people.c.usd).label("max_usd"),
-        ).group_by(people.c.name)
-    ).all()
-
-    # Rank each group's pay in order once, then read three positions off the ranking:
-    # the median (middle row, or the two middle rows averaged) and the quartiles
-    # by nearest rank, i.e. the value at rank ceil(p x n). Works on SQLite and Postgres.
+    # One pass: rank each group's pay once, then read every figure off that
+    # ranking in a single GROUP BY. The median is the middle row (or the two
+    # middle rows averaged); the quartiles are nearest-rank, ceil(p x n).
     ranked = select(
         people.c.name,
         people.c.usd,
         func.row_number().over(partition_by=people.c.name, order_by=people.c.usd).label("rank"),
         func.count().over(partition_by=people.c.name).label("size"),
     ).subquery()
-    medians = dict(
-        session.execute(
-            select(ranked.c.name, func.avg(ranked.c.usd))
-            .where(ranked.c.rank.between((ranked.c.size + 1) // 2, (ranked.c.size + 2) // 2))
-            .group_by(ranked.c.name)
-        ).all()
-    )
-    quartiles = {
-        name: value
-        for name, value in session.execute(
-            select(ranked.c.name, ranked.c.usd).where(
-                ranked.c.rank == (ranked.c.size + 3) // 4  # ceil(n / 4)
-            )
-        ).all()
-    }
-    upper_quartiles = {
-        name: value
-        for name, value in session.execute(
-            select(ranked.c.name, ranked.c.usd).where(
-                ranked.c.rank == (3 * ranked.c.size + 3) // 4  # ceil(3n / 4)
-            )
-        ).all()
-    }
+    r = ranked.c
+    middle = r.rank.between((r.size + 1) // 2, (r.size + 2) // 2)
+    rows = session.execute(
+        select(
+            r.name,
+            func.count().label("headcount"),
+            func.sum(r.usd).label("payroll_usd"),
+            func.min(r.usd).label("min_usd"),
+            func.max(case((r.rank == (r.size + 3) // 4, r.usd))).label("p25_usd"),
+            func.avg(case((middle, r.usd))).label("median_usd"),
+            func.max(case((r.rank == (3 * r.size + 3) // 4, r.usd))).label("p75_usd"),
+            func.max(r.usd).label("max_usd"),
+        ).group_by(r.name)
+    ).all()
 
     return [
         {
@@ -90,12 +71,12 @@ def _summarise(session: Session, group_column, filters: Filters) -> list[dict]:
             "headcount": row.headcount,
             "payroll_usd": _money(row.payroll_usd),
             "min_usd": _money(row.min_usd),
-            "p25_usd": _money(quartiles[row.name]),
-            "median_usd": _money(medians[row.name]),
-            "p75_usd": _money(upper_quartiles[row.name]),
+            "p25_usd": _money(row.p25_usd),
+            "median_usd": _money(row.median_usd),
+            "p75_usd": _money(row.p75_usd),
             "max_usd": _money(row.max_usd),
         }
-        for row in totals
+        for row in rows
     ]
 
 

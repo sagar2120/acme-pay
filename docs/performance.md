@@ -10,6 +10,8 @@ runs after one warm-up. Target from requirements.md: under 300 ms.
 | People, search "patel" in Pune | page of 50 | 37 ms | 37 ms |
 | Pay answers grouped by location | 6 groups | 86 ms | 86 ms |
 | Pay answers grouped by level, one department | 6 groups | 77 ms | 77 ms |
+| Pay answers by location, after percentiles were added and the query rewritten as one pass (14 Oct, later) | 6 groups | **57 ms** | |
+| Pay answers by level, one department, same rewrite | 6 groups | **46 ms** | |
 | Seed 10,000 employees | once | 0.2 s | |
 
 ## What this says
@@ -18,8 +20,10 @@ runs after one warm-up. Target from requirements.md: under 300 ms.
 - The index I planned made **no difference**. "Current pay" ranks every pay
   record with a window function, which reads the whole pay_record table
   whatever the index. At 11k rows that full read takes a few milliseconds.
-- The answers are slower than the list because they rank pay twice (once
-  for the totals, once for the median). Fine at this size.
+- The first version of the answers ranked pay twice (totals, then median),
+  and adding percentiles made that four passes. Rewritten as one ranked
+  pass read with CASE expressions in a single GROUP BY: 86 ms became 57 ms
+  with more figures, not fewer.
 
 ## What I would change, and when
 
