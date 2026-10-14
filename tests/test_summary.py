@@ -6,6 +6,9 @@ Denver, 4 people:  10 20 30 100            -> median 25   (even count: mean of m
 Boston, 1 person:  70                      -> median 70
 Plus a leaver in Austin paid 5000, who must not count anywhere.
 Whole company, 12 people: 10 10 20 20 30 30 | 40 50 60 70 100 1000 -> median 35
+Quartiles use the nearest-rank method: the value at rank ceil(p x n).
+Austin p25 -> rank ceil(1.75) = 2 -> 20;  p75 -> rank ceil(5.25) = 6 -> 60
+Denver p25 -> rank ceil(1.0) = 1 -> 10;   p75 -> rank ceil(3.0) = 3 -> 30
 """
 
 from datetime import date
@@ -119,3 +122,11 @@ def test_filters_apply_before_grouping(client, company):
 
 def test_an_unknown_grouping_is_refused(client, company):
     assert client.get("/api/pay/summary", params={"group_by": "salary"}).status_code == 422
+
+
+def test_quartiles_mark_the_middle_half_of_pay(client, company):
+    groups = by_name(summary(client))
+
+    assert (groups["Austin"]["p25_usd"], groups["Austin"]["p75_usd"]) == ("20000.00", "60000.00")
+    assert (groups["Denver"]["p25_usd"], groups["Denver"]["p75_usd"]) == ("10000.00", "30000.00")
+    assert (groups["Boston"]["p25_usd"], groups["Boston"]["p75_usd"]) == ("70000.00", "70000.00")
