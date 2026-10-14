@@ -18,7 +18,9 @@ class PayGroup(BaseModel):
     headcount: int
     payroll_usd: Decimal
     min_usd: Decimal
+    p25_usd: Decimal
     median_usd: Decimal
+    p75_usd: Decimal
     max_usd: Decimal
 
 

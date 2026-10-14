@@ -51,8 +51,9 @@ def _summarise(session: Session, group_column, filters: Filters) -> list[dict]:
         ).group_by(people.c.name)
     ).all()
 
-    # Median: number each group's pay in order, keep the middle row (odd count)
-    # or the middle two rows (even count), and average them. Works on SQLite and Postgres.
+    # Rank each group's pay in order once, then read three positions off the ranking:
+    # the median (middle row, or the two middle rows averaged) and the quartiles
+    # by nearest rank, i.e. the value at rank ceil(p x n). Works on SQLite and Postgres.
     ranked = select(
         people.c.name,
         people.c.usd,
@@ -66,6 +67,22 @@ def _summarise(session: Session, group_column, filters: Filters) -> list[dict]:
             .group_by(ranked.c.name)
         ).all()
     )
+    quartiles = {
+        name: value
+        for name, value in session.execute(
+            select(ranked.c.name, ranked.c.usd).where(
+                ranked.c.rank == (ranked.c.size + 3) // 4  # ceil(n / 4)
+            )
+        ).all()
+    }
+    upper_quartiles = {
+        name: value
+        for name, value in session.execute(
+            select(ranked.c.name, ranked.c.usd).where(
+                ranked.c.rank == (3 * ranked.c.size + 3) // 4  # ceil(3n / 4)
+            )
+        ).all()
+    }
 
     return [
         {
@@ -73,7 +90,9 @@ def _summarise(session: Session, group_column, filters: Filters) -> list[dict]:
             "headcount": row.headcount,
             "payroll_usd": _money(row.payroll_usd),
             "min_usd": _money(row.min_usd),
+            "p25_usd": _money(quartiles[row.name]),
             "median_usd": _money(medians[row.name]),
+            "p75_usd": _money(upper_quartiles[row.name]),
             "max_usd": _money(row.max_usd),
         }
         for row in totals
@@ -92,6 +111,8 @@ def _empty() -> dict:
         "headcount": 0,
         "payroll_usd": zero,
         "min_usd": zero,
+        "p25_usd": zero,
         "median_usd": zero,
+        "p75_usd": zero,
         "max_usd": zero,
     }

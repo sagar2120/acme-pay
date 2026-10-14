@@ -41,7 +41,9 @@ export type PayGroup = {
   headcount: number;
   payroll_usd: string;
   min_usd: string;
+  p25_usd: string;
   median_usd: string;
+  p75_usd: string;
   max_usd: string;
 };
 export type PaySummary = { group_by: GroupBy; overall: PayGroup; groups: PayGroup[] };

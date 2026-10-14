@@ -59,6 +59,8 @@ body {
 
 .range .track { position: absolute; top: 6px; height: 2px; background: var(--ledger-soft); }
 
+.range .middle-half { position: absolute; top: 4px; height: 6px; background: var(--ledger-soft); }
+
 .range .median {
   position: absolute;
   top: 2px;

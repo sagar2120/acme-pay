@@ -50,7 +50,9 @@ export function PayAnswers() {
           <>
             <strong>{overall.headcount.toLocaleString("en-US")}</strong> people ·{" "}
             <strong>{millions(overall.payroll_usd)}</strong> annual payroll · median pay{" "}
-            <strong>{usd(overall.median_usd)}</strong>. All figures are annual base pay in USD.
+            <strong>{usd(overall.median_usd)}</strong>; the middle half earn{" "}
+            <strong>{usd(overall.p25_usd)}</strong> to <strong>{usd(overall.p75_usd)}</strong>. All figures are
+            annual base pay in USD.
           </>
         ) : (
           " "
@@ -81,20 +83,24 @@ export function PayAnswers() {
           { title: "People", dataIndex: "headcount", className: "money", render: (n: number) => n.toLocaleString("en-US") },
           { title: "Payroll", dataIndex: "payroll_usd", className: "money", render: millions },
           {
-            title: `Pay range, $0 to ${usd(String(scaleMax))}`,
+            title: `Pay range, $0 to ${usd(String(scaleMax))}; band = middle half`,
             key: "range",
-            width: "34%",
+            width: "28%",
             render: (_, g) => (
               <PayRange
                 lowest={Number(g.min_usd)}
+                p25={Number(g.p25_usd)}
                 median={Number(g.median_usd)}
+                p75={Number(g.p75_usd)}
                 highest={Number(g.max_usd)}
                 scaleMax={scaleMax}
               />
             ),
           },
           { title: "Lowest", dataIndex: "min_usd", className: "money", render: usd },
+          { title: "25th pct", dataIndex: "p25_usd", className: "money", render: usd },
           { title: "Median", dataIndex: "median_usd", className: "money", render: (v: string) => <strong>{usd(v)}</strong> },
+          { title: "75th pct", dataIndex: "p75_usd", className: "money", render: usd },
           { title: "Highest", dataIndex: "max_usd", className: "money", render: usd },
         ]}
       />
