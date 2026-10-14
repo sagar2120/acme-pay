@@ -6,6 +6,7 @@ import { People } from "./pages/People";
 const theme = {
   token: {
     colorPrimary: "#2F5D50",
+    colorLink: "#2F5D50",
     colorText: "#1F2A2E",
     colorTextSecondary: "#5E6B67",
     colorBorderSecondary: "#E3E8E5",
