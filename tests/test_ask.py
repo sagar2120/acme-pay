@@ -89,6 +89,31 @@ def test_without_a_key_the_feature_says_so_instead_of_failing(session_factory, a
     assert "not set up" in response.json()["detail"]
 
 
+def test_without_a_chosen_model_gemini_3_6_flash_is_asked(monkeypatch):
+    monkeypatch.setenv("GEMINI_API_KEY", "test-key")
+    monkeypatch.delenv("GEMINI_MODEL", raising=False)
+    asked = {}
+
+    class Reply:
+        def raise_for_status(self):
+            pass
+
+        def json(self):
+            picked = '{"group_by": "level", "unclear": false}'
+            return {"candidates": [{"content": {"parts": [{"text": picked}]}}]}
+
+    def fake_post(url, **kwargs):
+        asked["url"] = url
+        return Reply()
+
+    monkeypatch.setattr("app.ask.httpx.post", fake_post)
+    options = {"locations": ["Pune"], "departments": ["Engineering"], "levels": ["L3"]}
+
+    interpret_with_gemini("what do we pay in Pune by level", options)
+
+    assert "/models/gemini-3.6-flash:generateContent" in asked["url"]
+
+
 def test_the_real_interpreter_is_the_default(session_factory):
     app = create_app(session_factory)
 

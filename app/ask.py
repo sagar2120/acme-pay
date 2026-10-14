@@ -15,7 +15,7 @@ from dataclasses import dataclass
 import httpx
 
 GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
-DEFAULT_MODEL = "gemini-2.5-flash"
+DEFAULT_MODEL = "gemini-3.6-flash"
 MAX_QUESTION_CHARS = 500
 
 
