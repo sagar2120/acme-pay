@@ -163,7 +163,7 @@ def test_the_key_travels_in_a_header_never_in_the_address(monkeypatch):
     assert "key" not in sent.get("params", {})
 
 
-def test_a_busy_model_is_retried_twice_then_reported_as_busy(monkeypatch):
+def test_a_busy_model_is_retried_then_the_fallback_model_is_tried(monkeypatch):
     import httpx
 
     from app.ask import ModelBusy
@@ -183,7 +183,48 @@ def test_a_busy_model_is_retried_twice_then_reported_as_busy(monkeypatch):
 
     with pytest.raises(ModelBusy, match="busy"):
         interpret_with_gemini("pay by level", {"locations": [], "departments": [], "levels": []})
-    assert len(calls) == 3
+
+    models = [url.split("/models/")[1].split(":")[0] for url in calls]
+    assert models == [
+        "gemini-3.6-flash",
+        "gemini-3.6-flash",
+        "gemini-3.5-flash-lite",
+        "gemini-3.5-flash-lite",
+    ]
+
+
+def test_when_the_main_model_is_overloaded_the_fallback_answers(monkeypatch):
+    import httpx
+
+    monkeypatch.setenv("GEMINI_API_KEY", "secret-key")
+    monkeypatch.setattr("app.ask.time.sleep", lambda s: None)
+
+    class Reply:
+        def raise_for_status(self):
+            pass
+
+        def json(self):
+            return {
+                "candidates": [
+                    {"content": {"parts": [{"text": '{"group_by": "level", "location": "Pune"}'}]}}
+                ]
+            }
+
+    def post(url, **kwargs):
+        if "gemini-3.6-flash" in url:
+            request = httpx.Request("POST", url)
+            raise httpx.HTTPStatusError(
+                "overloaded", request=request, response=httpx.Response(503, request=request)
+            )
+        return Reply()
+
+    monkeypatch.setattr("app.ask.httpx.post", post)
+
+    picked = interpret_with_gemini(
+        "pay in Pune by level", {"locations": ["Pune"], "departments": [], "levels": ["L3"]}
+    )
+
+    assert (picked.group_by, picked.location) == ("level", "Pune")
 
 
 def test_a_busy_model_reaches_the_screen_as_503_with_a_plain_sentence(session_factory, asha):
