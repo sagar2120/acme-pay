@@ -12,3 +12,4 @@ app/static/
 .pytest_cache/
 .ruff_cache/
 scripts/bench.db
+ui/node_modules/
