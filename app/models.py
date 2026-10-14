@@ -4,6 +4,8 @@ from decimal import Decimal
 from sqlalchemy import Date, ForeignKey, Index, Numeric, String, UniqueConstraint
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
+LEVELS = ["L1", "L2", "L3", "L4", "L5", "L6"]
+
 
 class Base(DeclarativeBase):
     pass

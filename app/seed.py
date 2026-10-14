@@ -12,7 +12,7 @@ from decimal import ROUND_HALF_UP, Decimal
 from sqlalchemy import func, insert, select
 from sqlalchemy.orm import Session
 
-from app.models import Department, Employee, FxRate, Location, PayRecord
+from app.models import LEVELS, Department, Employee, FxRate, Location, PayRecord
 from app.rules import check_pay_change, to_usd
 
 RATES_AS_OF = date(2026, 10, 1)
@@ -24,7 +24,6 @@ USD_PER_UNIT = {
     "USD": Decimal("1"),
 }
 
-LEVELS = ["L1", "L2", "L3", "L4", "L5", "L6"]
 LEVEL_SHARE = [15, 25, 28, 18, 10, 4]
 
 # Annual base pay in local currency, L1 to L6.
