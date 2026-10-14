@@ -55,14 +55,19 @@ Measured speed on 10,000 people: 37–86 ms per request, against a 300 ms target
 
 ## How I used Claude Code
 
-Claude was my engineering partner; I set the direction, made the calls and checked the result.
+I used Claude Code as the engineer who types. I decided what to build, what not to build, and checked what came out.
 
-- **Before any code**, I asked Incubyte six scoping questions (currency, salary history, login, analytics, import, timeline) and used their answers to fix the scope. Then the requirements, the glossary of words the project may use and the ten design decisions were written and committed first, so the code had something to be checked against.
-- **Working rules** live in [CLAUDE.md](CLAUDE.md): one behaviour at a time, the failing test first, only glossary words, no new libraries without asking, rules in one module with no database import, aggregates in SQL.
-- **Every feature went test first.** The commit history reads `test: … (red)` then `feat: …` for each one. The tests are the pay rules written down, not plumbing.
-- **I made the product calls**: pay kept as dated records instead of a column; median as the headline figure; the pay ladder and city split for the seed data; adding percentiles, CSV import and the question box after Incubyte said they were optional, and the condition for the question box — the model may choose filters but may never produce a number.
-- **What review caught** is recorded in [docs/prompts/](docs/prompts/) and [docs/NOTES.md](docs/NOTES.md): amounts not actually rounded to the nearest 1,000 although tests passed; test data saved before the employee it belonged to; an index that made no measurable difference, written down as such instead of claimed as a speed-up; a drop zone that pushed the import report off screen.
-- **Deployment** was done with Claude Code on my Mac: the Render service was created from `render.yaml`, the health check verified, and the Gemini key set as a host secret, never in the repository.
+Before starting I sent Incubyte six questions about scope and waited for the answers. Then I wrote down the requirements, the list of words the project is allowed to use (glossary.md) and the ten design decisions, and committed those before any code existed.
+
+CLAUDE.md is the rule sheet Claude reads every time. The main rules: do one small thing at a time, write the failing test first, use only the glossary words, do not add libraries without asking, keep the pay rules in one file with no database code in it, do the maths in SQL.
+
+The commit history shows the order: a `test: ... (red)` commit, then the `feat:` commit that makes it pass. The tests are the pay rules written down.
+
+The decisions were mine. Pay is stored as dated records, not as a salary column. The headline number is the median, not the average. I approved the salary table used to make the 10,000 fake people. When Incubyte said percentiles, CSV import and an AI question box were optional, I added all three, with one condition for the question box: the model may only choose filters, it may never produce a number.
+
+Things found by checking, not by the tests, are written in docs/NOTES.md and docs/prompts/: amounts were not really rounded to the nearest 1,000; test data was saved before the employee existed; an index I expected to help made no difference, so I wrote that down instead of claiming a speed-up; the first Gemini model name was closed to new keys; a question about Pune came back as Austin, so now a city typed in the question always wins.
+
+Deployment was done from Claude Code on my Mac. The Gemini key is a secret on the host, not in the repository.
 
 ## Known limits
 
