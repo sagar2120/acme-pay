@@ -1,0 +1,6 @@
+employee_id,amount,effective_from,note
+ACME-2015-00333,2200000,2026-11-01,Annual review
+ACME-2015-00390,0,2026-11-01,amount is zero
+ACME-2015-00525,1800000,2010-01-01,date is before hire date
+ACME-9999-99999,1800000,2026-11-01,employee does not exist
+ACME-2015-00333,2300000,2026-11-01,same person and date as line 2
