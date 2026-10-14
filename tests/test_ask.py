@@ -241,8 +241,12 @@ def test_a_busy_model_reaches_the_screen_as_503_with_a_plain_sentence(session_fa
     assert response.json()["detail"].startswith("The question service is busy")
 
 
-def test_the_word_people_does_not_drag_in_the_people_department(ask, asha):
+def test_the_word_people_does_not_drag_in_the_people_department(ask, session, asha):
     # Department names are ordinary words; only the model may pick one, never a text match.
+    from app.models import Department
+
+    session.add(Department(name="People"))
+    session.commit()
     picked = Interpretation(group_by="level", location="Pune", department=None, level=None)
 
     body = ask("what do we pay senior people in Pune", picked).json()
