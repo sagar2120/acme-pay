@@ -94,8 +94,13 @@ def interpret_with_gemini(question: str, options: dict) -> Interpretation:
     )
 
 
-def filters_from(picked: Interpretation, options: dict) -> dict:
-    """Turn names the model picked into the ids the summary needs; refuse anything unknown."""
+def filters_from(picked: Interpretation, options: dict, question: str = "") -> dict:
+    """Turn names the model picked into the ids the summary needs; refuse anything unknown.
+
+    A name the HR manager actually typed wins over the model's pick: the model
+    may fill in what the question leaves open, never contradict what it says.
+    """
+    picked = _as_written(question, picked, options)
     if picked.unclear or picked.group_by not in ("location", "department", "level"):
         raise QuestionNotUnderstood(
             "I can only answer questions about ACME pay by location, department or level. "
@@ -124,3 +129,17 @@ def _level(level: str | None, known: list[str]) -> str | None:
     if level.upper() in known:
         return level.upper()
     raise QuestionNotUnderstood(f"Levels are {', '.join(known)}; {level} is not one of them.")
+
+
+def _as_written(question: str, picked: Interpretation, options: dict) -> Interpretation:
+    words = f" {question.lower()} "
+    location = _only_one_named(words, options["locations"]) or picked.location
+    department = _only_one_named(words, options["departments"]) or picked.department
+    level = _only_one_named(words, options["levels"]) or picked.level
+    unclear = picked.unclear and not (location or department or level)
+    return Interpretation(picked.group_by or "location", location, department, level, unclear)
+
+
+def _only_one_named(words: str, known) -> str | None:
+    named = [name for name in known if f" {name.lower()} " in words or f" {name.lower()}," in words]
+    return named[0] if len(named) == 1 else None

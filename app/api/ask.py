@@ -36,7 +36,7 @@ def post_question(
         body.question,
         {"locations": list(locations), "departments": list(departments), "levels": LEVELS},
     )
-    filters = filters_from(picked, options)
+    filters = filters_from(picked, options, body.question)
     summary = pay_summary(
         session,
         filters["group_by"],
