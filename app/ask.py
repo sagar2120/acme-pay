@@ -17,7 +17,8 @@ from dataclasses import dataclass
 import httpx
 
 GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
-DEFAULT_MODEL = "gemini-3.6-flash"
+# Main model first, then a lighter one if Google reports the main one overloaded.
+DEFAULT_MODELS = "gemini-3.6-flash,gemini-3.5-flash-lite"
 MAX_QUESTION_CHARS = 500
 
 
@@ -62,7 +63,9 @@ def interpret_with_gemini(question: str, options: dict) -> Interpretation:
     key = os.environ.get("GEMINI_API_KEY")
     if not key:
         raise AskNotSetUp("Questions in plain English are not set up: GEMINI_API_KEY is missing.")
-    model = os.environ.get("GEMINI_MODEL", DEFAULT_MODEL)
+    models = [
+        m.strip() for m in os.environ.get("GEMINI_MODEL", DEFAULT_MODELS).split(",") if m.strip()
+    ]
 
     prompt = (
         "You translate an HR manager's question about pay into filters for a report. "
@@ -83,7 +86,7 @@ def interpret_with_gemini(question: str, options: dict) -> Interpretation:
             "responseSchema": RESPONSE_SCHEMA,
         },
     }
-    text = _call(GEMINI_URL.format(model=model), key, body)
+    text = _call(models, key, body)
     picked = json.loads(text)
     return Interpretation(
         group_by=picked.get("group_by"),
@@ -95,26 +98,34 @@ def interpret_with_gemini(question: str, options: dict) -> Interpretation:
 
 
 log = logging.getLogger("acme.ask")
-WAIT_BEFORE_RETRY = (1.5, 4.0)  # seconds; the free tier rate-limits per minute
+WAIT_BEFORE_RETRY = 1.5  # seconds
 TEMPORARY = {429, 500, 502, 503, 504}
 
 
-def _call(url: str, key: str, body: dict) -> str:
-    """One POST to Gemini, retried on a temporary error. The key goes in a header,
-    never in the address, so it cannot end up in access logs."""
-    for attempt, wait in enumerate((*WAIT_BEFORE_RETRY, None), start=1):
-        try:
-            response = httpx.post(url, headers={"x-goog-api-key": key}, json=body, timeout=15)
-            response.raise_for_status()
-            return response.json()["candidates"][0]["content"]["parts"][0]["text"]
-        except (httpx.HTTPStatusError, httpx.TransportError) as problem:
-            status = getattr(getattr(problem, "response", None), "status_code", None)
-            temporary = status in TEMPORARY or isinstance(problem, httpx.TransportError)
-            log.warning("gemini attempt %s: %s", attempt, status or type(problem).__name__)
-            if not temporary:
-                raise
-            if wait is not None:
-                time.sleep(wait)
+def _call(models: list[str], key: str, body: dict) -> str:
+    """POST to Gemini: each model gets two tries, then the next model. The key goes
+    in a header, never in the address, so it cannot end up in access logs."""
+    for model in models:
+        for attempt in (1, 2):
+            try:
+                response = httpx.post(
+                    GEMINI_URL.format(model=model),
+                    headers={"x-goog-api-key": key},
+                    json=body,
+                    timeout=15,
+                )
+                response.raise_for_status()
+                return response.json()["candidates"][0]["content"]["parts"][0]["text"]
+            except (httpx.HTTPStatusError, httpx.TransportError) as problem:
+                status = getattr(getattr(problem, "response", None), "status_code", None)
+                temporary = status in TEMPORARY or isinstance(problem, httpx.TransportError)
+                log.warning(
+                    "gemini %s attempt %s: %s", model, attempt, status or type(problem).__name__
+                )
+                if not temporary:
+                    raise
+                if attempt == 1:
+                    time.sleep(WAIT_BEFORE_RETRY)
     raise ModelBusy("The question service is busy right now. Please try again in a moment.")
 
 

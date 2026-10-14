@@ -89,7 +89,7 @@ def test_without_a_key_the_feature_says_so_instead_of_failing(session_factory, a
     assert "not set up" in response.json()["detail"]
 
 
-def test_without_a_chosen_model_gemini_3_6_flash_is_asked(monkeypatch):
+def test_without_a_chosen_model_gemini_3_6_flash_is_asked_first(monkeypatch):
     monkeypatch.setenv("GEMINI_API_KEY", "test-key")
     monkeypatch.delenv("GEMINI_MODEL", raising=False)
     asked = {}
