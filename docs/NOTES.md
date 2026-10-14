@@ -34,3 +34,19 @@ produce a number — it picks filters, SQL answers, unknown places are refused.
 
 Deployed from Claude Code on the Mac. Gemini key is a Render secret only.
 Measured again after the additions: still under 100 ms per request.
+
+## Wed 14 Oct, evening
+Three things found on the live site, none by the tests:
+- The Gemini key was in the request address, so it showed up in the host
+  logs. Moved to a header. Rotated the key.
+- Google answered 503 once and the screen said "Request failed (500)" as if
+  our app broke. Now: retry once, then a plain "busy, try again" message.
+- "what do we pay in Pune by level" came back as Austin once. The model
+  mis-picked. Now a city, team or level written in the question always wins
+  over the model's pick; the model only fills what the question leaves open.
+
+Speed: locally everything was under 60 ms so I had left out caching on
+purpose. On the free host /api/health alone takes 0.85 s and the answers
+page 1.9 s. Added one cache for the answers, cleared on any pay write.
+Rewrote the summary to rank once and read all seven figures off that
+ranking: 86 ms -> 57 ms locally even with percentiles added.
