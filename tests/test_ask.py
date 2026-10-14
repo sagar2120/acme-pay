@@ -252,3 +252,11 @@ def test_the_word_people_does_not_drag_in_the_people_department(ask, session, as
     body = ask("what do we pay senior people in Pune", picked).json()
 
     assert body["filters"]["department_id"] is None
+
+
+def test_a_refusal_lists_what_the_box_can_answer_about(ask, asha):
+    picked = Interpretation(group_by=None, location=None, department=None, level=None, unclear=True)
+
+    detail = ask("what do we pay in Mumbai", picked).json()["detail"]
+
+    assert "Pune" in detail and "Engineering" in detail and "L1" in detail
