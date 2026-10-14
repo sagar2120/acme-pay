@@ -56,3 +56,23 @@ def test_filter_options_list_locations_departments_and_levels(client, asha):
     assert body["locations"] == [{"id": 1, "name": "Pune"}]
     assert body["departments"] == [{"id": 1, "name": "Engineering"}]
     assert body["levels"] == ["L1", "L2", "L3", "L4", "L5", "L6"]
+
+
+def test_every_response_carries_basic_browser_security_headers(client):
+    headers = client.get("/api/health").headers
+
+    assert headers["x-content-type-options"] == "nosniff"
+    assert headers["x-frame-options"] == "DENY"
+    assert headers["referrer-policy"] == "same-origin"
+
+
+def test_search_text_is_length_limited(client, asha):
+    assert client.get("/api/employees", params={"q": "a" * 101}).status_code == 422
+
+
+def test_an_absurd_pay_amount_is_refused(client, asha):
+    response = client.post(
+        f"/api/employees/{asha.id}/pay", json={"amount": "100000000000", "effective_from": "2022-04-01"}
+    )
+
+    assert response.status_code == 422
