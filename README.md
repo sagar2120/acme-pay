@@ -55,20 +55,14 @@ Measured speed on 10,000 people: 37–86 ms per request, against a 300 ms target
 
 ## How I used Claude Code
 
-- I wrote the requirements, the glossary of words to use and the decisions before any code, and gave Claude Code standing rules in [CLAUDE.md](CLAUDE.md): it types, I decide; test first; only glossary words.
-- Every feature went test first, then code: the commit history shows a `test: … (red)` commit before each `feat:`.
-- The prompts for each step, what Claude proposed and what was changed are in [docs/prompts/](docs/prompts/). Examples of what review caught: pay was not actually rounded to the nearest 1,000 even though tests passed; test data saved pay before the employee existed; a planned index made no measurable difference, so the performance notes say so.
+Claude was my engineering partner; I set the direction, made the calls and checked the result.
 
-## Security, speed and data handling
-
-- **Input**: every request body and query parameter is typed and bounded (page size ≤ 200, search ≤ 100 characters, question ≤ 500, upload ≤ 2 MB / 20,000 rows, pay ≤ 1 billion). Sort and group-by accept a fixed set of values, so a user-supplied column name never reaches SQL. All queries are parameterised through SQLAlchemy.
-- **Money**: amounts are `Decimal`, rounded half-up to cents; never floats.
-- **Integrity**: the database itself enforces that a pay record belongs to a real employee and that one person cannot have two pay changes on one day, so two simultaneous requests cannot slip past a Python check. Imports are one transaction: all rows or none.
-- **Errors**: domain rules raise named errors in one module; the API maps them to 404 / 409 / 422 / 503 in one table. No `try/except Exception` anywhere.
-- **Headers**: `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: same-origin`.
-- **Speed**: one query per page (no N+1), aggregates and median in SQL, 37–86 ms measured on 10,000 people. Search waits 300 ms after typing before asking the server.
-- **Secrets**: the Gemini key is an environment variable on the host, never in the repository. Without it the question box reports that it is not set up; everything else works.
-- **Determinism**: seed and tests use a fixed random seed; tests never touch the network (the model is injected and faked).
+- **Before any code**, I asked Incubyte six scoping questions (currency, salary history, login, analytics, import, timeline) and used their answers to fix the scope. Then the requirements, the glossary of words the project may use and the ten design decisions were written and committed first, so the code had something to be checked against.
+- **Working rules** live in [CLAUDE.md](CLAUDE.md): one behaviour at a time, the failing test first, only glossary words, no new libraries without asking, rules in one module with no database import, aggregates in SQL.
+- **Every feature went test first.** The commit history reads `test: … (red)` then `feat: …` for each one. The tests are the pay rules written down, not plumbing.
+- **I made the product calls**: pay kept as dated records instead of a column; median as the headline figure; the pay ladder and city split for the seed data; adding percentiles, CSV import and the question box after Incubyte said they were optional, and the condition for the question box — the model may choose filters but may never produce a number.
+- **What review caught** is recorded in [docs/prompts/](docs/prompts/) and [docs/NOTES.md](docs/NOTES.md): amounts not actually rounded to the nearest 1,000 although tests passed; test data saved before the employee it belonged to; an index that made no measurable difference, written down as such instead of claimed as a speed-up; a drop zone that pushed the import report off screen.
+- **Deployment** was done with Claude Code on my Mac: the Render service was created from `render.yaml`, the health check verified, and the Gemini key set as a host secret, never in the repository.
 
 ## Known limits
 
