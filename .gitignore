@@ -11,3 +11,4 @@ app/static/
 .DS_Store
 .pytest_cache/
 .ruff_cache/
+scripts/bench.db
