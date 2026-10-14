@@ -72,7 +72,8 @@ def test_search_text_is_length_limited(client, asha):
 
 def test_an_absurd_pay_amount_is_refused(client, asha):
     response = client.post(
-        f"/api/employees/{asha.id}/pay", json={"amount": "100000000000", "effective_from": "2022-04-01"}
+        f"/api/employees/{asha.id}/pay",
+        json={"amount": "100000000000", "effective_from": "2022-04-01"},
     )
 
     assert response.status_code == 422
