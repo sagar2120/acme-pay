@@ -23,4 +23,7 @@ groups, 9,682 active people.
 
 ## What I changed and why
 
-<!-- Sagar: write 1-3 lines in your own words. -->
+Chose to run the deploy from Claude Code on my Mac rather than by hand. Signed
+in to Render myself with my own GitHub account (sagar2120), approved the
+blueprint, and had the health check and the six-city summary verified on the
+live URL before calling it done.

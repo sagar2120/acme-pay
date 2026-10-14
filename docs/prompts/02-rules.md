@@ -23,4 +23,7 @@ case where half-up and banker's rounding give different answers (12.345).
 
 ## What I changed and why
 
-Reviewed the decision and the diff; approved as proposed.
+Reviewed and approved. Later I questioned whether tests like "a pay change
+before the hire date is rejected" were too obvious to be worth writing. Kept
+them: the point is not to tell me the rule, it is that a future change to
+record_pay_change cannot silently break it without a red test.

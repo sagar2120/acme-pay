@@ -13,4 +13,7 @@ selects, so the median query did not change.
 
 ## What I changed and why
 
-Reviewed the hand-worked values in the test header and the diff; approved.
+Incubyte said percentiles were optional; I decided to add them after the core
+was live. Reviewed the hand-worked values in the test header. On the live
+page I flagged the column title "Pay range, $0 to $386,000; band = middle
+half" as clumsy; it became "Pay spread" with a one-line key under the heading.

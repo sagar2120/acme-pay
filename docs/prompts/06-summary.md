@@ -27,4 +27,6 @@ them by hand. Groups sorted highest median first.
 
 ## What I changed and why
 
-Reviewed the decision and the diff; approved as proposed.
+Reviewed and approved. Asked for the reasoning behind median over average
+so I could defend it: pay is right-skewed, a few senior salaries pull the
+average above what most people earn.

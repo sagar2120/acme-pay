@@ -20,4 +20,8 @@ whether to fix the file or the database.
 
 ## What I changed and why
 
-Approved the all-or-nothing rule as the right behaviour for payroll data.
+Incubyte called import a stretch goal and the first plan left it out; I
+decided to add it because it is the actual replacement for the spreadsheet.
+Approved the all-or-nothing rule for payroll data. After using the live page I
+said the import button was hard to find among the filters; it moved beside the
+People heading.

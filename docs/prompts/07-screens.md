@@ -25,4 +25,7 @@
 
 ## What I changed and why
 
-<!-- Sagar: write 1-3 lines in your own words. -->
+Asked directly whether the screens looked AI-generated before accepting them.
+Approved the pay-range strip as the one distinctive element and the rule of
+no stat-card row and no chart library. Checked the screenshots of both pages
+before they were committed.

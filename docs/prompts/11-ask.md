@@ -20,6 +20,10 @@ page shows the same table it always shows.
 
 ## What I changed and why
 
-Approved; asked that the screen say which filters were applied and that the
-figures come from the database, so the HR manager never mistakes it for a
-chatbot answer.
+Incubyte said an LLM interface was optional; I decided to add one. I also
+proposed using Gemini for live exchange rates, and dropped that after weighing
+that a model can invent numbers and the brief asked for static rates. On the
+live site I reported a question about Pune answered as Austin, asked for a
+clear button, and then asked for a chat panel at the bottom right instead of
+an inline box; it was built that way, on the condition that each reply stays
+the database's own summary.

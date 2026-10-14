@@ -25,8 +25,8 @@ each fix went in test first.
 
 ## What I changed and why
 
-Decided the chat-panel shape over an inline box, on the condition that every
-reply stays the database's own summary with a "Show on page" button; the
-model never writes a sentence of its own. Decided not to let the model guess
-what "senior" means: all levels are shown, highest first, and the HR manager
-reads it.
+Reported that the live site felt slow; measuring it led to the one-pass
+summary and the cache. Ran the live page and the README through an AI-content
+checker and rejected the first "how I used Claude Code" text as reading
+generated; it was rewritten in plain sentences. Decided not to let the model
+guess what "senior" means: all levels are shown, highest first.

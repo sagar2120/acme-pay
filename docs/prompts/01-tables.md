@@ -31,4 +31,6 @@ unique constraint `one_pay_change_per_day` so the error says what rule broke.
 
 ## What I changed and why
 
-Reviewed the decision and the diff; approved as proposed.
+Reviewed the decision and the diff; approved as proposed. Chose to have the
+code written under my own GitHub account and git identity from the first
+commit, not the shared machine's default account.

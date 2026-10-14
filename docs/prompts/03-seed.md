@@ -32,4 +32,6 @@ Austin L3 $126k, London L3 £69k — matches the table.
 
 ## What I changed and why
 
-Approved the base-pay table (Pune L3 ≈ ₹18 L, Austin L3 ≈ $125k) and the city split before any code was written; asked for same pay per level across departments to keep it simple.
+Approved the proposed base-pay table (Pune L3 about ₹18 lakh, Austin L3 about
+$125k), the city split, and the simpler option of the same pay per level in
+every department, before any seed code was written.
