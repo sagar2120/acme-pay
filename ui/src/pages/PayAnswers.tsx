@@ -54,6 +54,8 @@ export function PayAnswers() {
             <strong>{usd(overall.median_usd)}</strong>; the middle half earn{" "}
             <strong>{usd(overall.p25_usd)}</strong> to <strong>{usd(overall.p75_usd)}</strong>. All figures are
             annual base pay in USD.
+            <br />
+            <span className="legend">Pay spread: line from lowest to highest, band for the middle half, dot at the median.</span>
           </>
         ) : (
           " "
@@ -97,7 +99,7 @@ export function PayAnswers() {
           { title: "People", dataIndex: "headcount", className: "money", render: (n: number) => n.toLocaleString("en-US") },
           { title: "Payroll", dataIndex: "payroll_usd", className: "money", render: millions },
           {
-            title: `Pay range, $0 to ${usd(String(scaleMax))}; band = middle half`,
+            title: "Pay spread",
             key: "range",
             width: "28%",
             render: (_, g) => (
