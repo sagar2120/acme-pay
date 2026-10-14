@@ -8,6 +8,7 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session, sessionmaker
 
+from app.answers_cache import forget_answers
 from app.api import ask, employees, options, pay, pay_import, summary
 from app.ask import (
     AskNotSetUp,
@@ -51,6 +52,7 @@ def create_app(
         yield
 
     app = FastAPI(title="ACME Pay", lifespan=lifespan)
+    forget_answers()  # every app (each test, each process) starts with no remembered answers
     app.state.session_factory = session_factory
     app.state.interpreter = interpreter
 

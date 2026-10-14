@@ -6,6 +6,7 @@ from typing import Literal
 from sqlalchemy import case, func, literal, select
 from sqlalchemy.orm import Session
 
+from app.answers_cache import remember, remembered
 from app.employees import Filters, active_matching
 from app.models import Department, Employee, Location
 from app.pay import current_pay
@@ -21,13 +22,20 @@ CENT = Decimal("0.01")
 
 
 def pay_summary(session: Session, group_by: GroupBy, filters: Filters) -> dict:
-    groups = _summarise(session, GROUP_COLUMN[group_by], filters)
-    overall = _summarise(session, literal("All"), filters)
-    return {
-        "group_by": group_by,
-        "overall": overall[0] if overall else _empty(),
-        "groups": sorted(groups, key=lambda g: g["median_usd"], reverse=True),
-    }
+    key = (group_by, filters)
+    answer = remembered(key)
+    if answer is None:
+        groups = _summarise(session, GROUP_COLUMN[group_by], filters)
+        overall = _summarise(session, literal("All"), filters)
+        answer = remember(
+            key,
+            {
+                "group_by": group_by,
+                "overall": overall[0] if overall else _empty(),
+                "groups": sorted(groups, key=lambda g: g["median_usd"], reverse=True),
+            },
+        )
+    return answer
 
 
 def _summarise(session: Session, group_column, filters: Filters) -> list[dict]:

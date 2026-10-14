@@ -14,6 +14,7 @@ from decimal import Decimal, InvalidOperation
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.answers_cache import forget_answers
 from app.models import Employee, FxRate, PayRecord
 from app.rules import PayRuleError, check_pay_change, to_usd
 
@@ -55,6 +56,7 @@ def import_pay_changes(session: Session, content: bytes) -> ImportResult:
         return ImportResult(saved=0, errors=errors)
     session.add_all(records)
     session.commit()
+    forget_answers()
     return ImportResult(saved=len(records), errors=[])
 
 

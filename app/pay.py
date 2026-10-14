@@ -4,6 +4,7 @@ from decimal import Decimal
 from sqlalchemy import Subquery, func, select
 from sqlalchemy.orm import Session
 
+from app.answers_cache import forget_answers
 from app.models import Employee, FxRate, PayRecord
 from app.rules import check_pay_change, to_usd
 
@@ -70,4 +71,5 @@ def record_pay_change(
     )
     session.add(record)
     session.commit()
+    forget_answers()
     return record
