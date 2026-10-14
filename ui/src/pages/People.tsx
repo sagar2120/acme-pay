@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useApi, type EmployeePage, type EmployeeRow, type Filters, type Options } from "../api";
 import { FilterBar } from "../components/FilterBar";
+import { ImportDrawer } from "../components/ImportDrawer";
 import { PayChangeDrawer } from "../components/PayChangeDrawer";
 import { filtersFrom } from "../lib/filters";
 import { formatMoney } from "../lib/money";
@@ -15,6 +16,7 @@ const SORT_FIELD: Record<string, string> = { full_name: "name", pay_usd: "pay_us
 export function People() {
   const [params, setParams] = useSearchParams();
   const [editing, setEditing] = useState<EmployeeRow | null>(null);
+  const [importing, setImporting] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
 
   const filters = filtersFrom(params);
@@ -49,6 +51,9 @@ export function People() {
 
       <div className="toolbar">
         <FilterBar withSearch options={options.data} value={filters} onChange={(next) => show(next)} />
+        <Button onClick={() => setImporting(true)} style={{ marginLeft: "auto" }}>
+          Import pay changes
+        </Button>
       </div>
 
       {people.error && <Alert type="error" showIcon message={people.error} style={{ marginBottom: 16 }} />}
@@ -107,6 +112,11 @@ export function People() {
       <PayChangeDrawer
         person={editing}
         onClose={() => setEditing(null)}
+        onSaved={() => setReloadKey((key) => key + 1)}
+      />
+      <ImportDrawer
+        open={importing}
+        onClose={() => setImporting(false)}
         onSaved={() => setReloadKey((key) => key + 1)}
       />
     </>

@@ -51,6 +51,9 @@ export type PaySummary = { group_by: GroupBy; overall: PayGroup; groups: PayGrou
 export type PayChange = { amount: number; effective_from: string; note?: string };
 export type { Filters };
 
+export type RowError = { line: number; employee_id: string; error: string };
+export type ImportReport = { saved: number; errors: RowError[] };
+
 export class ApiError extends Error {}
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
@@ -70,6 +73,19 @@ export function recordPayChange(employeeId: string, change: PayChange): Promise<
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(change),
   });
+}
+
+/** Upload a CSV of pay changes. A 422 with row errors is a report, not a failure. */
+export async function importPayChanges(file: File): Promise<ImportReport> {
+  const form = new FormData();
+  form.append("file", file);
+  const response = await fetch("/api/pay/import", { method: "POST", body: form });
+  const body = await response.json().catch(() => ({}));
+  if (response.status === 422 && Array.isArray(body.errors)) return body as ImportReport;
+  if (!response.ok) {
+    throw new ApiError(typeof body.detail === "string" ? body.detail : `Upload failed (${response.status})`);
+  }
+  return body as ImportReport;
 }
 
 /** GET a path; keeps the previous data on screen while the next request loads. */
