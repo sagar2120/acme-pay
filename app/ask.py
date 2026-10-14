@@ -141,8 +141,11 @@ def filters_from(picked: Interpretation, options: dict, question: str = "") -> d
     picked = _as_written(question, picked, options)
     if picked.unclear or picked.group_by not in ("location", "department", "level"):
         raise QuestionNotUnderstood(
-            "I can only answer questions about ACME pay by location, department or level. "
-            "Try: what do we pay senior engineers in Pune?"
+            "I can only answer about ACME pay by location "
+            f"({', '.join(options['locations'])}), department "
+            f"({', '.join(options['departments'])}) or level "
+            f"({options['levels'][0]} to {options['levels'][-1]}). "
+            "Try: what do we pay engineers in Pune by level?"
         )
     return {
         "group_by": picked.group_by,

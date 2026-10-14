@@ -1,5 +1,6 @@
 import { App as AntApp, ConfigProvider } from "antd";
 import { NavLink, Route, Routes } from "react-router-dom";
+import { AskChat } from "./components/AskChat";
 import { PayAnswers } from "./pages/PayAnswers";
 import { People } from "./pages/People";
 
@@ -35,6 +36,7 @@ export function App() {
             <Route path="/people" element={<People />} />
           </Routes>
         </main>
+        <AskChat />
       </AntApp>
     </ConfigProvider>
   );
