@@ -118,3 +118,20 @@ def test_the_real_interpreter_is_the_default(session_factory):
     app = create_app(session_factory)
 
     assert app.state.interpreter is interpret_with_gemini
+
+
+def test_a_name_written_in_the_question_wins_over_what_the_model_picked(ask, asha):
+    # The model says Austin; the HR manager typed Pune. The typed word wins.
+    picked = Interpretation(group_by="level", location="Austin", department=None, level=None)
+
+    body = ask("what do we pay in Pune by level", picked).json()
+
+    assert body["filters"]["location_name"] == "Pune"
+
+
+def test_a_level_written_in_the_question_is_applied_even_if_the_model_missed_it(ask, asha):
+    picked = Interpretation(group_by="location", location=None, department=None, level=None)
+
+    body = ask("l3 pay by location", picked).json()
+
+    assert body["filters"]["level"] == "L3"
