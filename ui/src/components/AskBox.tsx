@@ -2,7 +2,7 @@ import { Alert, Input } from "antd";
 import { useState } from "react";
 import { askAboutPay, type AskFilters } from "../api";
 
-type Props = { onAnswered: (filters: AskFilters) => void };
+type Props = { onAnswered: (filters: AskFilters) => void; onReset: () => void };
 
 const EXAMPLES = "e.g. what do we pay senior engineers in Pune, or compare departments in London";
 
@@ -11,7 +11,7 @@ const EXAMPLES = "e.g. what do we pay senior engineers in Pune, or compare depar
  * The language model only translates the question; the numbers shown are the
  * database's, exactly as they are for any filter.
  */
-export function AskBox({ onAnswered }: Props) {
+export function AskBox({ onAnswered, onReset }: Props) {
   const [question, setQuestion] = useState("");
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState<{ kind: "error" | "info"; text: string } | null>(null);
@@ -24,7 +24,7 @@ export function AskBox({ onAnswered }: Props) {
     try {
       const answer = await askAboutPay(asked);
       onAnswered(answer.filters);
-      setNote({ kind: "info", text: `Showing ${describe(answer.filters)}. The figures come from the database, not the model.` });
+      setNote({ kind: "info", text: `Showing ${describe(answer.filters)}. The AI chose the filters; the numbers are from the database.` });
     } catch (error) {
       setNote({ kind: "error", text: (error as Error).message });
     } finally {
@@ -32,10 +32,17 @@ export function AskBox({ onAnswered }: Props) {
     }
   };
 
+  const reset = () => {
+    setQuestion("");
+    setNote(null);
+    onReset();
+  };
+
   return (
     <div className="ask">
       <Input.Search
         size="large"
+        allowClear
         placeholder={EXAMPLES}
         aria-label="Ask a question about pay"
         enterButton="Ask"
@@ -45,7 +52,21 @@ export function AskBox({ onAnswered }: Props) {
         onChange={(event) => setQuestion(event.target.value)}
         onSearch={ask}
       />
-      {note && <Alert type={note.kind} showIcon message={note.text} style={{ marginTop: 8 }} />}
+      {note && (
+        <Alert
+          type={note.kind}
+          showIcon
+          message={note.text}
+          style={{ marginTop: 8 }}
+          action={
+            note.kind === "info" ? (
+              <a href="/" onClick={(event) => { event.preventDefault(); reset(); }}>
+                Show everything
+              </a>
+            ) : undefined
+          }
+        />
+      )}
     </div>
   );
 }

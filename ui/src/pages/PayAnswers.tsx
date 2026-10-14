@@ -63,6 +63,7 @@ export function PayAnswers() {
       </p>
 
       <AskBox
+        onReset={() => show({}, "location")}
         onAnswered={(picked) =>
           show(
             {
