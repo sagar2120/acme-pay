@@ -239,3 +239,12 @@ def test_a_busy_model_reaches_the_screen_as_503_with_a_plain_sentence(session_fa
 
     assert response.status_code == 503
     assert response.json()["detail"].startswith("The question service is busy")
+
+
+def test_the_word_people_does_not_drag_in_the_people_department(ask, asha):
+    # Department names are ordinary words; only the model may pick one, never a text match.
+    picked = Interpretation(group_by="level", location="Pune", department=None, level=None)
+
+    body = ask("what do we pay senior people in Pune", picked).json()
+
+    assert body["filters"]["department_id"] is None
