@@ -8,6 +8,7 @@ place or team ACME does not have, the question is refused rather than guessed.
 """
 
 import json
+import logging
 import os
 import time
 from collections.abc import Callable
@@ -93,14 +94,15 @@ def interpret_with_gemini(question: str, options: dict) -> Interpretation:
     )
 
 
-RETRY_AFTER_SECONDS = 1.5
+log = logging.getLogger("acme.ask")
+WAIT_BEFORE_RETRY = (1.5, 4.0)  # seconds; the free tier rate-limits per minute
 TEMPORARY = {429, 500, 502, 503, 504}
 
 
 def _call(url: str, key: str, body: dict) -> str:
-    """One POST to Gemini, retried once on a temporary error. The key goes in a
-    header, never in the address, so it cannot end up in access logs."""
-    for attempt in (1, 2):
+    """One POST to Gemini, retried on a temporary error. The key goes in a header,
+    never in the address, so it cannot end up in access logs."""
+    for attempt, wait in enumerate((*WAIT_BEFORE_RETRY, None), start=1):
         try:
             response = httpx.post(url, headers={"x-goog-api-key": key}, json=body, timeout=15)
             response.raise_for_status()
@@ -108,10 +110,11 @@ def _call(url: str, key: str, body: dict) -> str:
         except (httpx.HTTPStatusError, httpx.TransportError) as problem:
             status = getattr(getattr(problem, "response", None), "status_code", None)
             temporary = status in TEMPORARY or isinstance(problem, httpx.TransportError)
+            log.warning("gemini attempt %s: %s", attempt, status or type(problem).__name__)
             if not temporary:
                 raise
-            if attempt == 1:
-                time.sleep(RETRY_AFTER_SECONDS)
+            if wait is not None:
+                time.sleep(wait)
     raise ModelBusy("The question service is busy right now. Please try again in a moment.")
 
 

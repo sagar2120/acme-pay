@@ -163,7 +163,7 @@ def test_the_key_travels_in_a_header_never_in_the_address(monkeypatch):
     assert "key" not in sent.get("params", {})
 
 
-def test_a_busy_model_is_retried_once_then_reported_as_busy(monkeypatch):
+def test_a_busy_model_is_retried_twice_then_reported_as_busy(monkeypatch):
     import httpx
 
     from app.ask import ModelBusy
@@ -183,7 +183,7 @@ def test_a_busy_model_is_retried_once_then_reported_as_busy(monkeypatch):
 
     with pytest.raises(ModelBusy, match="busy"):
         interpret_with_gemini("pay by level", {"locations": [], "departments": [], "levels": []})
-    assert len(calls) == 2
+    assert len(calls) == 3
 
 
 def test_a_busy_model_reaches_the_screen_as_503_with_a_plain_sentence(session_factory, asha):
