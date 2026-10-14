@@ -1,0 +1,7 @@
+# One Render web service on the free plan, built from the Dockerfile.
+services:
+  - type: web
+    name: acme-pay
+    runtime: docker
+    plan: free
+    healthCheckPath: /api/health
