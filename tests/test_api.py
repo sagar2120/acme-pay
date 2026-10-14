@@ -48,3 +48,11 @@ def test_second_pay_change_on_the_same_day_is_409(client, asha):
     response = client.post(f"/api/employees/{asha.id}/pay", json=body)
 
     assert response.status_code == 409
+
+
+def test_filter_options_list_locations_departments_and_levels(client, asha):
+    body = client.get("/api/options").json()
+
+    assert body["locations"] == [{"id": 1, "name": "Pune"}]
+    assert body["departments"] == [{"id": 1, "name": "Engineering"}]
+    assert body["levels"] == ["L1", "L2", "L3", "L4", "L5", "L6"]
