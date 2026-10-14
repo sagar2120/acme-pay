@@ -46,6 +46,8 @@ body {
 
 .page h1 { font-size: 28px; font-weight: 600; margin: 0 0 6px; }
 
+.page-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+
 .overall { color: var(--muted); margin: 0 0 24px; font-size: 15px; }
 
 .overall strong { color: var(--ink); font-weight: 600; }

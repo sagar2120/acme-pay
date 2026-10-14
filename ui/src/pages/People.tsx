@@ -38,7 +38,10 @@ export function People() {
 
   return (
     <>
-      <h1>People</h1>
+      <div className="page-head">
+        <h1>People</h1>
+        <Button onClick={() => setImporting(true)}>Import pay changes from CSV</Button>
+      </div>
       <p className="overall">
         {people.data ? (
           <>
@@ -51,9 +54,6 @@ export function People() {
 
       <div className="toolbar">
         <FilterBar withSearch options={options.data} value={filters} onChange={(next) => show(next)} />
-        <Button onClick={() => setImporting(true)} style={{ marginLeft: "auto" }}>
-          Import pay changes
-        </Button>
       </div>
 
       {people.error && <Alert type="error" showIcon message={people.error} style={{ marginBottom: 16 }} />}
