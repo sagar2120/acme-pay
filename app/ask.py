@@ -74,6 +74,9 @@ def interpret_with_gemini(question: str, options: dict) -> Interpretation:
         f"Locations: {', '.join(options['locations'])}\n"
         f"Departments: {', '.join(options['departments'])}\n"
         f"Levels: {', '.join(options['levels'])}\n"
+        "The plain word 'people' means employees, not the People department; pick the "
+        "People department only when the question says 'People team' or 'People department'. "
+        "Words like senior or junior are not levels; leave level null and group by level. "
         "Set unclear=true if the question is not about pay at ACME or cannot be mapped. "
         "Never invent a name that is not in the lists.\n"
         f"Question: {question}"
@@ -167,9 +170,12 @@ def _level(level: str | None, known: list[str]) -> str | None:
 
 
 def _as_written(question: str, picked: Interpretation, options: dict) -> Interpretation:
+    """Cities and levels are never ordinary words, so one typed in the question wins.
+    Department names (People, Product, Sales...) are ordinary words, so only the
+    model may pick one."""
     words = f" {question.lower()} "
     location = _only_one_named(words, options["locations"]) or picked.location
-    department = _only_one_named(words, options["departments"]) or picked.department
+    department = picked.department
     level = _only_one_named(words, options["levels"]) or picked.level
     unclear = picked.unclear and not (location or department or level)
     return Interpretation(picked.group_by or "location", location, department, level, unclear)
