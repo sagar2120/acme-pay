@@ -19,6 +19,8 @@ class PayChangeIn(BaseModel):
 
 
 class PayRecordOut(BaseModel):
+    model_config = {"from_attributes": True}
+
     id: int
     amount: Decimal
     currency: str

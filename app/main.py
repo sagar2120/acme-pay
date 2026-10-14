@@ -2,7 +2,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session, sessionmaker
 
-from app.api import pay
+from app.api import employees, pay
 from app.pay import EmployeeNotFound, SamePayChangeDate
 from app.rules import PayRuleError
 
@@ -22,6 +22,7 @@ def create_app(session_factory: sessionmaker[Session] | None = None) -> FastAPI:
     def health() -> dict[str, str]:
         return {"status": "ok"}
 
+    app.include_router(employees.router)
     app.include_router(pay.router)
 
     for error, status in ERROR_STATUS.items():
