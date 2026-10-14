@@ -8,7 +8,7 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session, sessionmaker
 
-from app.api import employees, options, pay, summary
+from app.api import employees, options, pay, pay_import, summary
 from app.db import make_engine, make_session_factory
 from app.models import Base
 from app.pay import EmployeeNotFound, SamePayChangeDate
@@ -49,6 +49,7 @@ def create_app(
     app.include_router(pay.router)
     app.include_router(summary.router)
     app.include_router(options.router)
+    app.include_router(pay_import.router)
 
     for error, status in ERROR_STATUS.items():
         app.add_exception_handler(error, _responds_with(status))

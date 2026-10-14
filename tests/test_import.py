@@ -27,7 +27,7 @@ def test_a_good_file_saves_every_row_and_reports_the_count(client, session, asha
     )
 
     assert response.status_code == 201
-    assert response.json() == {"saved": 2}
+    assert response.json() == {"saved": 2, "errors": []}
     assert saved_records(session) == 2
 
 
