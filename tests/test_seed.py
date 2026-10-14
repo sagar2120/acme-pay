@@ -48,3 +48,10 @@ def test_every_pay_record_is_in_the_currency_of_the_employees_location(session):
         .where(PayRecord.currency != Location.currency)
     )
     assert mismatched == 0
+
+
+def test_every_amount_is_a_round_thousand_like_a_real_offer(session):
+    seed(session, count=SMALL)
+
+    amounts = session.scalars(select(PayRecord.amount)).all()
+    assert all(amount % 1000 == 0 for amount in amounts)
