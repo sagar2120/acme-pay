@@ -19,3 +19,7 @@ Code on my Mac), test first. Each file below records one step:
 | Pay answers | [06-summary.md](06-summary.md) |
 | Screens | [07-screens.md](07-screens.md) |
 | Deploy | [08-deploy.md](08-deploy.md) |
+| 25th and 75th percentiles | [09-percentiles.md](09-percentiles.md) |
+| CSV import | [10-import.md](10-import.md) |
+| Plain-English questions | [11-ask.md](11-ask.md) |
+| Found on the live site | [12-live-findings.md](12-live-findings.md) |
