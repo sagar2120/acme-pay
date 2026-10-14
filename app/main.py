@@ -9,7 +9,13 @@ from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session, sessionmaker
 
 from app.api import ask, employees, options, pay, pay_import, summary
-from app.ask import AskNotSetUp, Interpreter, QuestionNotUnderstood, interpret_with_gemini
+from app.ask import (
+    AskNotSetUp,
+    Interpreter,
+    ModelBusy,
+    QuestionNotUnderstood,
+    interpret_with_gemini,
+)
 from app.db import make_engine, make_session_factory
 from app.models import Base
 from app.pay import EmployeeNotFound, SamePayChangeDate
@@ -23,6 +29,7 @@ ERROR_STATUS = {
     PayRuleError: 422,
     QuestionNotUnderstood: 422,
     AskNotSetUp: 503,
+    ModelBusy: 503,
 }
 BUILT_SCREENS = Path(__file__).parent / "static"
 

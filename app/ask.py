@@ -9,6 +9,7 @@ place or team ACME does not have, the question is refused rather than guessed.
 
 import json
 import os
+import time
 from collections.abc import Callable
 from dataclasses import dataclass
 
@@ -21,6 +22,10 @@ MAX_QUESTION_CHARS = 500
 
 class AskNotSetUp(RuntimeError):
     pass
+
+
+class ModelBusy(RuntimeError):
+    """Google answered with a temporary error twice in a row."""
 
 
 class QuestionNotUnderstood(ValueError):
@@ -69,21 +74,15 @@ def interpret_with_gemini(question: str, options: dict) -> Interpretation:
         "Never invent a name that is not in the lists.\n"
         f"Question: {question}"
     )
-    response = httpx.post(
-        GEMINI_URL.format(model=model),
-        params={"key": key},
-        json={
-            "contents": [{"parts": [{"text": prompt}]}],
-            "generationConfig": {
-                "temperature": 0,
-                "responseMimeType": "application/json",
-                "responseSchema": RESPONSE_SCHEMA,
-            },
+    body = {
+        "contents": [{"parts": [{"text": prompt}]}],
+        "generationConfig": {
+            "temperature": 0,
+            "responseMimeType": "application/json",
+            "responseSchema": RESPONSE_SCHEMA,
         },
-        timeout=15,
-    )
-    response.raise_for_status()
-    text = response.json()["candidates"][0]["content"]["parts"][0]["text"]
+    }
+    text = _call(GEMINI_URL.format(model=model), key, body)
     picked = json.loads(text)
     return Interpretation(
         group_by=picked.get("group_by"),
@@ -92,6 +91,28 @@ def interpret_with_gemini(question: str, options: dict) -> Interpretation:
         level=picked.get("level") or None,
         unclear=bool(picked.get("unclear")),
     )
+
+
+RETRY_AFTER_SECONDS = 1.5
+TEMPORARY = {429, 500, 502, 503, 504}
+
+
+def _call(url: str, key: str, body: dict) -> str:
+    """One POST to Gemini, retried once on a temporary error. The key goes in a
+    header, never in the address, so it cannot end up in access logs."""
+    for attempt in (1, 2):
+        try:
+            response = httpx.post(url, headers={"x-goog-api-key": key}, json=body, timeout=15)
+            response.raise_for_status()
+            return response.json()["candidates"][0]["content"]["parts"][0]["text"]
+        except (httpx.HTTPStatusError, httpx.TransportError) as problem:
+            status = getattr(getattr(problem, "response", None), "status_code", None)
+            temporary = status in TEMPORARY or isinstance(problem, httpx.TransportError)
+            if not temporary:
+                raise
+            if attempt == 1:
+                time.sleep(RETRY_AFTER_SECONDS)
+    raise ModelBusy("The question service is busy right now. Please try again in a moment.")
 
 
 def filters_from(picked: Interpretation, options: dict, question: str = "") -> dict:
