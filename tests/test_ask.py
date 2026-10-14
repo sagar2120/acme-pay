@@ -1,10 +1,10 @@
 """Plain-English questions. The language model only picks filters; every number comes from SQL."""
 
 import pytest
+from fastapi.testclient import TestClient
 
 from app.ask import Interpretation, interpret_with_gemini
 from app.main import create_app
-from fastapi.testclient import TestClient
 
 
 def fake_interpreter(answer: Interpretation):

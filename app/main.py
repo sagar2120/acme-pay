@@ -8,7 +8,8 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session, sessionmaker
 
-from app.api import employees, options, pay, pay_import, summary
+from app.api import ask, employees, options, pay, pay_import, summary
+from app.ask import AskNotSetUp, Interpreter, QuestionNotUnderstood, interpret_with_gemini
 from app.db import make_engine, make_session_factory
 from app.models import Base
 from app.pay import EmployeeNotFound, SamePayChangeDate
@@ -20,6 +21,8 @@ ERROR_STATUS = {
     EmployeeNotFound: 404,
     SamePayChangeDate: 409,
     PayRuleError: 422,
+    QuestionNotUnderstood: 422,
+    AskNotSetUp: 503,
 }
 BUILT_SCREENS = Path(__file__).parent / "static"
 
@@ -27,8 +30,10 @@ BUILT_SCREENS = Path(__file__).parent / "static"
 def create_app(
     session_factory: sessionmaker[Session] | None = None,
     static_dir: Path | None = BUILT_SCREENS,
+    interpreter: Interpreter = interpret_with_gemini,
 ) -> FastAPI:
-    """Tests pass their own in-memory database; the server opens DATABASE_URL on start."""
+    """Tests pass their own in-memory database and a fake question interpreter;
+    the server opens DATABASE_URL on start and uses Gemini."""
 
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
@@ -40,6 +45,7 @@ def create_app(
 
     app = FastAPI(title="ACME Pay", lifespan=lifespan)
     app.state.session_factory = session_factory
+    app.state.interpreter = interpreter
 
     @app.get("/api/health")
     def health() -> dict[str, str]:
@@ -50,6 +56,7 @@ def create_app(
     app.include_router(summary.router)
     app.include_router(options.router)
     app.include_router(pay_import.router)
+    app.include_router(ask.router)
 
     for error, status in ERROR_STATUS.items():
         app.add_exception_handler(error, _responds_with(status))
