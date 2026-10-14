@@ -27,17 +27,19 @@ one currency.
 
 - **Login and roles.** One persona, confirmed with Incubyte. First thing to add
   before anyone other than the HR manager uses it.
-- **CSV / Excel import.** The seed stands in for migration here. A correct
-  import needs per-row validation, an error report and all-or-nothing saving;
-  that is a feature of its own, and I would rather ship a smaller app that is
-  right. First item after v1.
-- **Chat / LLM question box.** Pay numbers must be exact and repeatable. The
-  filters already answer the questions. An LLM adds cost, latency and a
-  prompt-injection surface and solves no pain the HR manager stated.
 - **Pay bands and band charts.** ACME has no band structure; inventing one
   would produce confident but arbitrary numbers.
 - **Live exchange rates, payroll runs, payslips, tax, bonus, equity.** Other
   systems' jobs; this app is the record of base pay they would read from.
+
+## Added after the core was done (both optional in the brief)
+
+- **CSV import of pay changes**, because it is the real replacement for the
+  spreadsheet workflow. Built all-or-nothing: every row checked, every problem
+  reported with its line, nothing saved unless all pass.
+- **Plain-English questions**, only in a form where the model cannot invent a
+  number: it maps the question to the page's own filters and the database
+  answers. Unknown places or teams are refused, not guessed.
 
 ## Assumptions
 

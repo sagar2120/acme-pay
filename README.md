@@ -7,13 +7,15 @@ Salary management for ACME's HR manager: keep pay for 10,000 people across six c
 
 ## What it does
 
-- **Pay answers** (home page): headcount, annual payroll and the lowest / median / highest pay in USD, grouped by location, department or level, with filters. A thin line per group shows the spread of pay, not just one number. Click a group to see those people.
+- **Pay answers** (home page): headcount, annual payroll and the lowest / 25th percentile / median / 75th percentile / highest pay in USD, grouped by location, department or level, with filters. A range strip per group shows the spread, with the middle half as a band and the median as a dot. Click a group to see those people.
+- **Ask in plain English**: "what do we pay senior engineers in Pune?" The language model (Gemini) only translates the question into the page's own filters; it never sees or produces a number. The database answers, and the page says which filters were applied. Questions it cannot map, or places ACME does not have, are refused rather than guessed.
 - **People**: search by name or email, filter, sort by name or pay, 50 per page.
 - **Record a pay change**: a new dated record with a note; old records are never overwritten. Changes that break a rule (zero pay, a date before the hire date, two changes on one day) are refused with the reason.
+- **Import pay changes from CSV**: every row is checked with the same rules; if any row fails, nothing is saved and every problem line is listed with its reason, so the file is fixed once and uploaded again.
 - **Pay in local currency** (₹, $, €, £, S$), converted to USD with a fixed rate table, so cities can be compared.
 - **Seed**: the same 10,000 realistic employees on every run.
 
-What I chose to leave out, and why, is in [docs/requirements.md](docs/requirements.md): login, CSV import, an LLM question box, pay bands, live exchange rates.
+What I chose to leave out, and why, is in [docs/requirements.md](docs/requirements.md): login, pay bands, live exchange rates. Import and the question box were optional in the brief; I added them because the import is the real replacement for the spreadsheet, and the question box could be built in a form that cannot invent a number.
 
 ## Run it locally
 
@@ -33,7 +35,7 @@ Or the whole thing as it runs online: `docker build -t acme-pay . && docker run 
 ## Tests
 
 ```bash
-uv run pytest            # 48 tests, under 1 second
+uv run pytest            # 64 tests, under 1 second
 cd ui && npm test        # 10 tests
 ```
 
@@ -57,6 +59,17 @@ Measured speed on 10,000 people: 37–86 ms per request, against a 300 ms target
 - Every feature went test first, then code: the commit history shows a `test: … (red)` commit before each `feat:`.
 - The prompts for each step, what Claude proposed and what was changed are in [docs/prompts/](docs/prompts/). Examples of what review caught: pay was not actually rounded to the nearest 1,000 even though tests passed; test data saved pay before the employee existed; a planned index made no measurable difference, so the performance notes say so.
 
+## Security, speed and data handling
+
+- **Input**: every request body and query parameter is typed and bounded (page size ≤ 200, search ≤ 100 characters, question ≤ 500, upload ≤ 2 MB / 20,000 rows, pay ≤ 1 billion). Sort and group-by accept a fixed set of values, so a user-supplied column name never reaches SQL. All queries are parameterised through SQLAlchemy.
+- **Money**: amounts are `Decimal`, rounded half-up to cents; never floats.
+- **Integrity**: the database itself enforces that a pay record belongs to a real employee and that one person cannot have two pay changes on one day, so two simultaneous requests cannot slip past a Python check. Imports are one transaction: all rows or none.
+- **Errors**: domain rules raise named errors in one module; the API maps them to 404 / 409 / 422 / 503 in one table. No `try/except Exception` anywhere.
+- **Headers**: `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: same-origin`.
+- **Speed**: one query per page (no N+1), aggregates and median in SQL, 37–86 ms measured on 10,000 people. Search waits 300 ms after typing before asking the server.
+- **Secrets**: the Gemini key is an environment variable on the host, never in the repository. Without it the question box reports that it is not set up; everything else works.
+- **Determinism**: seed and tests use a fixed random seed; tests never touch the network (the model is injected and faked).
+
 ## Known limits
 
 - On Render's free plan the disk is reset on every deploy, so the live site re-seeds and pay changes made there do not survive a redeploy. Real use would point `DATABASE_URL` at a managed Postgres.
@@ -64,6 +77,6 @@ Measured speed on 10,000 people: 37–86 ms per request, against a 300 ms target
 
 ## What I would do next
 
-1. CSV import with per-row validation and an error report.
-2. Login and roles before anyone other than the HR manager uses it.
+1. Login and roles before anyone other than the HR manager uses it.
+2. A managed Postgres so pay changes on the live site survive a redeploy.
 3. At ~100,000 people: keep current pay in its own table, updated with each pay change, and keyset paging on the People list.
