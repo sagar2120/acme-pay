@@ -50,6 +50,8 @@ body {
 
 .overall strong { color: var(--ink); font-weight: 600; }
 
+.ask { max-width: 720px; margin-bottom: 20px; }
+
 .toolbar { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-bottom: 16px; }
 
 .money { text-align: right; white-space: nowrap; }

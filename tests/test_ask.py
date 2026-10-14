@@ -41,6 +41,8 @@ def test_the_answer_comes_from_the_database_using_the_filters_the_model_picked(a
         "location_id": 1,
         "department_id": None,
         "level": None,
+        "location_name": "Pune",
+        "department_name": None,
     }
     assert body["summary"]["groups"][0] == {
         "name": "L3",

@@ -51,6 +51,16 @@ export type PaySummary = { group_by: GroupBy; overall: PayGroup; groups: PayGrou
 export type PayChange = { amount: number; effective_from: string; note?: string };
 export type { Filters };
 
+export type AskFilters = {
+  group_by: GroupBy;
+  location_id: number | null;
+  department_id: number | null;
+  level: string | null;
+  location_name?: string;
+  department_name?: string;
+};
+export type Answer = { filters: AskFilters; summary: PaySummary };
+
 export type RowError = { line: number; employee_id: string; error: string };
 export type ImportReport = { saved: number; errors: RowError[] };
 
@@ -72,6 +82,14 @@ export function recordPayChange(employeeId: string, change: PayChange): Promise<
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(change),
+  });
+}
+
+export function askAboutPay(question: string): Promise<Answer> {
+  return request("/api/pay/ask", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ question }),
   });
 }
 

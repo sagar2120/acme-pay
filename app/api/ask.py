@@ -46,4 +46,12 @@ def post_question(
             level=filters["level"],
         ),
     )
-    return {"filters": filters, "summary": summary}
+    names = {
+        "location_name": next(
+            (n for n, i in locations.items() if i == filters["location_id"]), None
+        ),
+        "department_name": next(
+            (n for n, i in departments.items() if i == filters["department_id"]), None
+        ),
+    }
+    return {"filters": {**filters, **names}, "summary": summary}

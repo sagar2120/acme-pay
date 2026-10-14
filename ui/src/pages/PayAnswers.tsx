@@ -1,6 +1,7 @@
 import { Alert, Segmented, Table } from "antd";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useApi, type Filters, type GroupBy, type Options, type PayGroup, type PaySummary } from "../api";
+import { AskBox } from "../components/AskBox";
 import { FilterBar } from "../components/FilterBar";
 import { PayRange } from "../components/PayRange";
 import { filtersFrom } from "../lib/filters";
@@ -58,6 +59,19 @@ export function PayAnswers() {
           " "
         )}
       </p>
+
+      <AskBox
+        onAnswered={(picked) =>
+          show(
+            {
+              location_id: picked.location_id ?? undefined,
+              department_id: picked.department_id ?? undefined,
+              level: picked.level ?? undefined,
+            },
+            picked.group_by,
+          )
+        }
+      />
 
       <div className="toolbar">
         <Segmented
