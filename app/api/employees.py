@@ -47,7 +47,7 @@ class EmployeeDetail(BaseModel):
 
 
 def filters(
-    q: str | None = None,
+    q: Annotated[str | None, Query(max_length=100)] = None,
     location_id: int | None = None,
     department_id: int | None = None,
     level: str | None = None,

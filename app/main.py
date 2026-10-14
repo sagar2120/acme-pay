@@ -64,6 +64,14 @@ def create_app(
     if static_dir is not None and static_dir.is_dir():
         _serve_screens(app, static_dir)
 
+    @app.middleware("http")
+    async def security_headers(request: Request, call_next):
+        response = await call_next(request)
+        response.headers["X-Content-Type-Options"] = "nosniff"  # no MIME sniffing of uploads
+        response.headers["X-Frame-Options"] = "DENY"  # pay data never inside another site
+        response.headers["Referrer-Policy"] = "same-origin"  # filters in the URL stay here
+        return response
+
     return app
 
 

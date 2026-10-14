@@ -4,6 +4,8 @@ from datetime import date
 from decimal import ROUND_HALF_UP, Decimal
 
 CENT = Decimal("0.01")
+# Above this the number is a typo, whatever the currency (one billion a year).
+MAX_ANNUAL_PAY = Decimal("1000000000")
 
 
 class PayRuleError(ValueError):
@@ -32,6 +34,8 @@ def check_pay_change(
 ) -> None:
     if amount <= 0:
         raise PayNotPositive(f"Annual amount must be greater than zero, got {amount}")
+    if amount > MAX_ANNUAL_PAY:
+        raise PayNotPositive(f"Annual amount {amount} is above the limit of {MAX_ANNUAL_PAY:,}")
     if currency != location_currency:
         raise CurrencyMismatch(
             f"Pay must be in {location_currency}, the currency of the employee's location; "
