@@ -135,3 +135,66 @@ def test_a_level_written_in_the_question_is_applied_even_if_the_model_missed_it(
     body = ask("l3 pay by location", picked).json()
 
     assert body["filters"]["level"] == "L3"
+
+
+def test_the_key_travels_in_a_header_never_in_the_address(monkeypatch):
+    monkeypatch.setenv("GEMINI_API_KEY", "secret-key")
+    sent = {}
+
+    class Reply:
+        status_code = 200
+
+        def raise_for_status(self):
+            pass
+
+        def json(self):
+            return {"candidates": [{"content": {"parts": [{"text": '{"group_by": "level"}'}]}}]}
+
+    def fake_post(url, **kwargs):
+        sent.update(kwargs, url=url)
+        return Reply()
+
+    monkeypatch.setattr("app.ask.httpx.post", fake_post)
+
+    interpret_with_gemini("pay by level", {"locations": [], "departments": [], "levels": []})
+
+    assert sent["headers"]["x-goog-api-key"] == "secret-key"
+    assert "secret-key" not in sent["url"]
+    assert "key" not in sent.get("params", {})
+
+
+def test_a_busy_model_is_retried_once_then_reported_as_busy(monkeypatch):
+    import httpx
+
+    from app.ask import ModelBusy
+
+    monkeypatch.setenv("GEMINI_API_KEY", "secret-key")
+    calls = []
+
+    def busy(url, **kwargs):
+        calls.append(url)
+        request = httpx.Request("POST", url)
+        raise httpx.HTTPStatusError(
+            "busy", request=request, response=httpx.Response(503, request=request)
+        )
+
+    monkeypatch.setattr("app.ask.httpx.post", busy)
+    monkeypatch.setattr("app.ask.time.sleep", lambda s: None)
+
+    with pytest.raises(ModelBusy, match="busy"):
+        interpret_with_gemini("pay by level", {"locations": [], "departments": [], "levels": []})
+    assert len(calls) == 2
+
+
+def test_a_busy_model_reaches_the_screen_as_503_with_a_plain_sentence(session_factory, asha):
+    from app.ask import ModelBusy
+
+    def always_busy(question, options):
+        raise ModelBusy("The question service is busy right now. Please try again in a moment.")
+
+    client = TestClient(create_app(session_factory, interpreter=always_busy))
+
+    response = client.post("/api/pay/ask", json={"question": "pay in Pune"})
+
+    assert response.status_code == 503
+    assert response.json()["detail"].startswith("The question service is busy")
