@@ -1,4 +1,4 @@
-# 09 — Plain-English questions (Gemini)
+# 11 — Plain-English questions (Gemini)
 
 Commits: 8151d2c (red), 6a0703f (green), 1714e94 (screen)
 

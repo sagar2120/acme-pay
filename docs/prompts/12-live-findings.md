@@ -1,0 +1,32 @@
+# 12 — Found on the live site, fixed the same evening
+
+Commits: 9676656 .. bb18ce7
+
+Everything here was found by using the deployed app, not by the tests, and
+each fix went in test first.
+
+| Seen | Cause | Fix |
+| --- | --- | --- |
+| "what do we pay in Pune by level" showed Austin | the model mis-picked the city | a city or level typed in the question wins over the model (a4de00d) |
+| the Gemini key appeared in the host logs | it was sent in the request address; errors print the address | sent in the x-goog-api-key header; key rotated (bd74e48) |
+| "Request failed (500)" when Google was busy | Google's 503 passed through as our 500 | retry, then a plain "busy, try again" 503 (bd74e48, 9c52e44) |
+| still busy on every try | the main model overloaded (503 every time, never 429) | fall back to a second model (0a33400) |
+| "senior people in Berlin" showed the People department | my typed-name rule matched the word "people" | that rule now covers cities and levels only; departments are the model's call (efd9b68) |
+| the test for that passed before the fix | test data had no People department | test seeds one, verified red against the old code (f2a228f) |
+| answers page 1.9 s on the free host | 0.85 s is the host; ~1 s our query on a slow CPU | summary in one ranked pass (50232b0) and answers cached until pay changes (3d32bd5) |
+| "what do we pay in Mumbai" refused with a generic message | the model correctly said unclear | the refusal now lists the known locations, departments and levels (69c0e28) |
+| no way back after a question set filters; import button hard to find | — | clear + Show everything; chat panel; import button beside the heading (3ea431e, 69c0e28, bb18ce7) |
+
+## Prompts (abridged; the full text is in the commit messages)
+
+> Push main to origin, wait for Render to be Live, then from this Mac time these with curl ... Then type "what do we pay in Pune by level" in the Ask box on the live site and tell me exactly what it shows.
+
+> ... read the log and tell me which status code Google returned on the failed attempts (429 or 503). Do not print the key.
+
+## What I changed and why
+
+Decided the chat-panel shape over an inline box, on the condition that every
+reply stays the database's own summary with a "Show on page" button; the
+model never writes a sentence of its own. Decided not to let the model guess
+what "senior" means: all levels are shown, highest first, and the HR manager
+reads it.
