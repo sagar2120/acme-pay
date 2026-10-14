@@ -1,0 +1,81 @@
+:root {
+  --ink: #1f2a2e;
+  --muted: #5e6b67;
+  --ledger: #2f5d50;
+  --ledger-soft: #cfe0d9;
+  --rule: #e3e8e5;
+  --paper: #f5f7f6;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: "Public Sans", system-ui, sans-serif;
+  /* Pay figures line up in columns */
+  font-variant-numeric: tabular-nums;
+}
+
+.masthead {
+  display: flex;
+  align-items: baseline;
+  gap: 40px;
+  padding: 18px 32px;
+  background: #fff;
+  border-bottom: 1px solid var(--rule);
+}
+
+.product { font-weight: 700; letter-spacing: 0.02em; }
+
+.masthead nav { display: flex; gap: 24px; }
+
+.masthead nav a {
+  color: var(--muted);
+  text-decoration: none;
+  padding-bottom: 4px;
+  border-bottom: 2px solid transparent;
+}
+
+.masthead nav a.active { color: var(--ink); border-bottom-color: var(--ledger); }
+
+.masthead nav a:focus-visible { outline: 2px solid var(--ledger); outline-offset: 4px; }
+
+.page { max-width: 1200px; margin: 0 auto; padding: 32px; }
+
+.page h1 { font-size: 28px; font-weight: 600; margin: 0 0 6px; }
+
+.overall { color: var(--muted); margin: 0 0 24px; font-size: 15px; }
+
+.overall strong { color: var(--ink); font-weight: 600; }
+
+.toolbar { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-bottom: 16px; }
+
+.money { text-align: right; white-space: nowrap; }
+
+/* The pay range strip: lowest to highest on one shared scale, dot at the median */
+.range { position: relative; height: 14px; min-width: 160px; }
+
+.range .track { position: absolute; top: 6px; height: 2px; background: var(--ledger-soft); }
+
+.range .median {
+  position: absolute;
+  top: 2px;
+  width: 10px;
+  height: 10px;
+  margin-left: -5px;
+  border-radius: 50%;
+  background: var(--ledger);
+}
+
+.history { margin: 0; padding: 0; list-style: none; }
+
+.history li { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--rule); }
+
+.history .note { color: var(--muted); font-size: 13px; }
+
+@media (max-width: 720px) {
+  .masthead { padding: 14px 16px; gap: 20px; }
+  .page { padding: 20px 16px; }
+}
