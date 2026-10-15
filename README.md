@@ -3,7 +3,6 @@
 Salary management for ACME's HR manager: keep pay for 10,000 people across six cities correct, and answer "what do we pay?" in seconds, in one currency.
 
 **Live:** https://acme-pay.onrender.com (free plan: the first visit after a quiet period can take up to a minute to wake up)
-**Demo video (5 min):** _link added after recording_
 
 **Where to look:** everything except this README and CLAUDE.md is in the [docs](docs/) folder.
 
