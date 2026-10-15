@@ -32,7 +32,7 @@ if read off the same ranking as the median; import only all-or-nothing with
 every bad line reported; the question box only if the model can never
 produce a number — it picks filters, SQL answers, unknown places are refused.
 
-Deployed from Claude Code on the Mac. Gemini key is a Render secret only.
+Deployed to Render myself, with Claude Code running the CLI. Gemini key is a Render secret only.
 Measured again after the additions: still under 100 ms per request.
 
 ## Wed 14 Oct, evening

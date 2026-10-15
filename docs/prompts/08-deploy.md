@@ -4,7 +4,7 @@
 
 > Decision: one service. FastAPI serves the built UI at / and the API at /api. The database is a SQLite file at DATABASE_URL. On startup the tables are created and the seed runs if the database is empty. Deploy on Render's free plan. Test first: the screens are served for any address outside /api.
 
-Deployed from Claude Code on my Mac:
+I deployed with Claude Code running the Render CLI on my Mac; the prompt I gave it:
 
 > Deploy this repo to Render using the render.yaml in the repo root (one Docker web service, free plan, health check /api/health). ... Watch the deploy until it is Live or fails. If it fails, show me the last 30 lines of the build log and stop. Do not change any code. When Live, check /api/health and /api/pay/summary?group_by=location returns 6 groups, and give me the public URL.
 
@@ -23,7 +23,8 @@ groups, 9,682 active people.
 
 ## What I changed and why
 
-Chose to run the deploy from Claude Code on my Mac rather than by hand. Signed
-in to Render myself with my own GitHub account (sagar2120), approved the
-blueprint, and had the health check and the six-city summary verified on the
-live URL before calling it done.
+I deployed it myself: signed in to Render with my own GitHub account
+(sagar2120), approved the blueprint, and later set the Gemini key as a host
+secret. Claude Code ran the CLI commands. I had it stop on any build failure
+rather than change code, and verified the health check and the six-city
+summary on the live URL before calling it done.
