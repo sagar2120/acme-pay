@@ -2,7 +2,7 @@
 
 How I worked: I planned each step with Claude in a chat, approved or changed
 the decision, and the code was typed by Claude (in that session or in Claude
-Code on my Mac), test first. Each file below records one step:
+Code on macOS), test first. Each file below records one step:
 
 - **Prompts** — the decision prompt for the step, word for word
 - **What Claude proposed** — including anything it added beyond the prompt

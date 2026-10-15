@@ -69,7 +69,7 @@ I also set the rules for how the app must behave under load and bad input: every
 
 Things found by checking, not by the tests, are written in docs/NOTES.md and docs/prompts/: amounts were not really rounded to the nearest 1,000; test data was saved before the employee existed; an index I expected to help made no difference, so I wrote that down instead of claiming a speed-up; the first Gemini model name was closed to new keys; a question about Pune came back as Austin, so now a city typed in the question always wins.
 
-I deployed it to Render from my Mac, signed in with my own account, using Claude Code to run the Render CLI. I set the Gemini key as a secret on the host; it is not in the repository.
+I deployed it to Render on macOS, signed in with my own account, with Claude Code running the Render CLI under my instructions. I set the Gemini key as a secret on the host; it is not in the repository.
 
 ## Known limits
 

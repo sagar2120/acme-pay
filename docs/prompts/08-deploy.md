@@ -4,7 +4,7 @@
 
 > Decision: one service. FastAPI serves the built UI at / and the API at /api. The database is a SQLite file at DATABASE_URL. On startup the tables are created and the seed runs if the database is empty. Deploy on Render's free plan. Test first: the screens are served for any address outside /api.
 
-I deployed with Claude Code running the Render CLI on my Mac; the prompt I gave it:
+I deployed on macOS, with Claude Code running the Render CLI under my instructions; the prompt I gave it:
 
 > Deploy this repo to Render using the render.yaml in the repo root (one Docker web service, free plan, health check /api/health). ... Watch the deploy until it is Live or fails. If it fails, show me the last 30 lines of the build log and stop. Do not change any code. When Live, check /api/health and /api/pay/summary?group_by=location returns 6 groups, and give me the public URL.
 
