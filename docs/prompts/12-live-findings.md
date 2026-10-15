@@ -1,21 +1,21 @@
 # 12 — Found on the live site, fixed the same evening
 
-Commits: 9676656 .. bb18ce7
+Commits: be0fa21 .. 6e1bb0a
 
 Everything here was found by using the deployed app, not by the tests, and
 each fix went in test first.
 
 | Seen | Cause | Fix |
 | --- | --- | --- |
-| "what do we pay in Pune by level" showed Austin | the model mis-picked the city | a city or level typed in the question wins over the model (a4de00d) |
-| the Gemini key appeared in the host logs | it was sent in the request address; errors print the address | sent in the x-goog-api-key header; key rotated (bd74e48) |
-| "Request failed (500)" when Google was busy | Google's 503 passed through as our 500 | retry, then a plain "busy, try again" 503 (bd74e48, 9c52e44) |
-| still busy on every try | the main model overloaded (503 every time, never 429) | fall back to a second model (0a33400) |
-| "senior people in Berlin" showed the People department | my typed-name rule matched the word "people" | that rule now covers cities and levels only; departments are the model's call (efd9b68) |
-| the test for that passed before the fix | test data had no People department | test seeds one, verified red against the old code (f2a228f) |
-| answers page 1.9 s on the free host | 0.85 s is the host; ~1 s our query on a slow CPU | summary in one ranked pass (50232b0) and answers cached until pay changes (3d32bd5) |
-| "what do we pay in Mumbai" refused with a generic message | the model correctly said unclear | the refusal now lists the known locations, departments and levels (69c0e28) |
-| no way back after a question set filters; import button hard to find | — | clear + Show everything; chat panel; import button beside the heading (3ea431e, 69c0e28, bb18ce7) |
+| "what do we pay in Pune by level" showed Austin | the model mis-picked the city | a city or level typed in the question wins over the model (3e1c238) |
+| the Gemini key appeared in the host logs | it was sent in the request address; errors print the address | sent in the x-goog-api-key header; key rotated (248d8b9) |
+| "Request failed (500)" when Google was busy | Google's 503 passed through as our 500 | retry, then a plain "busy, try again" 503 (248d8b9, a6729fe) |
+| still busy on every try | the main model overloaded (503 every time, never 429) | fall back to a second model (f428822) |
+| "senior people in Berlin" showed the People department | my typed-name rule matched the word "people" | that rule now covers cities and levels only; departments are the model's call (1f1dccc) |
+| the test for that passed before the fix | test data had no People department | test seeds one, verified red against the old code (5d18a88) |
+| answers page 1.9 s on the free host | 0.85 s is the host; ~1 s our query on a slow CPU | summary in one ranked pass (1accf17) and answers cached until pay changes (86c8b2b) |
+| "what do we pay in Mumbai" refused with a generic message | the model correctly said unclear | the refusal now lists the known locations, departments and levels (67a27d0) |
+| no way back after a question set filters; import button hard to find | — | clear + Show everything; chat panel; import button beside the heading (49c3a6b, 67a27d0, 6e1bb0a) |
 
 ## Prompts (abridged; the full text is in the commit messages)
 

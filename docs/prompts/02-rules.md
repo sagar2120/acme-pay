@@ -1,6 +1,6 @@
 # 02 — Pay rules
 
-Commits: 5f8de13 (red), a6b758b (green)
+Commits: 1c32e46 (red), 2fea240 (green)
 
 ## Prompts
 

@@ -1,6 +1,6 @@
 # 06 — Pay answers (summary)
 
-Commits: 2a1ee82 (red), 22b80fb (green), f08fbd6 (performance notes)
+Commits: 8d89fcd (red), 8029e95 (green), f8b7ca7 (performance notes)
 
 ## Prompts
 

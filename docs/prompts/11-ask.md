@@ -1,6 +1,6 @@
 # 11 — Plain-English questions (Gemini)
 
-Commits: 8151d2c (red), 6a0703f (green), 1714e94 (screen)
+Commits: 0e6eb58 (red), b4af2fb (green), b539cdb (screen)
 
 ## Prompt
 

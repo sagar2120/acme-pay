@@ -1,6 +1,6 @@
 # 05 — People list
 
-Commits: ea2622a (red), then the feat commit after it
+Commits: 845f126 (red), then the feat commit after it
 
 ## Prompts
 

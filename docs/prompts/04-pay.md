@@ -1,6 +1,6 @@
 # 04 — Current pay and recording a pay change
 
-Commits: 9c52261 (red), then the feat commit after it
+Commits: b608b1a (red), then the feat commit after it
 
 ## Prompts
 
