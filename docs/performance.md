@@ -46,5 +46,5 @@ write or import. Repeat views cost the host overhead only.
 | --- | --- | --- |
 | ~100k employees | Keep a `current_pay` table (or an `is_current` flag) updated in the same transaction as each pay change | Removes the full window scan from every request; the index then helps |
 | ~100k employees | Keyset paging on the People list (`WHERE (full_name, id) > (:last_name, :last_id)`) | OFFSET slows down on deep pages |
-| Several HR users writing | Postgres instead of SQLite (one setting) | SQLite allows one writer at a time |
+| Several HR users writing | Postgres instead of SQLite (connection setting, driver, migrations, a test run on Postgres) | SQLite allows one writer at a time |
 | A second server process | Shared cache (Redis) instead of the in-process dict | The dict is per process; two processes would each recompute and could serve stale answers after the other's write |

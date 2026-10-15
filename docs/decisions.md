@@ -7,15 +7,25 @@ change it. Dated as made.
 Considered: Postgres on a free host, MySQL.
 Why: one writer (the HR manager), 10k rows, nothing to host or keep alive, the
 same engine in tests and production, and the brief itself suggests it.
-Change when: a second writer appears. SQLAlchemy makes it a connection-string
-change; the median query is written to run on both.
+Cost: SQLite has no exact decimal type. Whole amounts (all seeded pay) are
+stored as integers, but an amount with paise or cents would be stored as a
+float; the code reads values back as Decimal. No wrong figure at this size,
+but sums are not guaranteed exact at the database level.
+Change when: a second writer appears, or before real payroll money. The
+connection is one setting; the switch also needs the Postgres driver, Alembic
+migrations and a full test run on Postgres. The median query uses standard SQL
+(ROW_NUMBER, CASE) but has not been run on Postgres yet.
 
 ## 2. FastAPI + SQLAlchemy 2.0 + Pydantic v2 (2026-10-13)
 Considered: Django + DRF, Flask.
 Why: the role is Python; FastAPI validates input and documents the API for
-free, and TestClient makes API tests cheap. Django's admin would tempt me to
-skip the real UI.
-Change when: never for this size.
+free, and TestClient makes API tests cheap. Django's main strengths (login,
+admin, the plugin ecosystem) are out of scope here.
+Cost: no built-in migrations; tables are created at start-up with create_all.
+Fine while the live database is rebuilt on every deploy; Alembic is needed
+before a real database.
+Change when: login, roles and several HR users are needed. Django gives
+those built in.
 
 ## 3. One deployable service (2026-10-13)
 Considered: separate API on Render + UI on Vercel.

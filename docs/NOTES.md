@@ -50,3 +50,16 @@ purpose. On the free host /api/health alone takes 0.85 s and the answers
 page 1.9 s. Added one cache for the answers, cleared on any pay write.
 Rewrote the summary to rank once and read all seven figures off that
 ranking: 86 ms -> 57 ms locally even with percentiles added.
+
+## Thu 15 Oct
+Re-read the docs as an interviewer would. Two claims were too strong:
+- "Postgres is a one-line switch" (Tue night). The connection is one setting,
+  but the switch also needs the Postgres driver, migrations and a test run on
+  Postgres. I have not done that run. Corrected in decisions.md.
+- "Money is Decimal, never float". True in the code. SQLite has no exact
+  decimal type: checked the seeded file, all 11,407 pay records are stored as
+  integers because they are whole amounts, but an amount with cents would be
+  stored as a float. Wrote it in known limits.
+Also wrote down the cost of choosing FastAPI over Django: no built-in
+migrations. Tables come from create_all, fine while the live site re-seeds on
+every deploy, not fine for a real database.
